@@ -1,0 +1,16 @@
+# dependências e build (pesados, e a pasta está no OneDrive)
+node_modules/
+dist/
+.astro/
+
+# segredos: nunca commitar
+.env*
+
+# documentação de acompanhamento (fica fora do Git)
+Gerenciamento_Projeto/
+
+# sistema / editor
+.DS_Store
+Thumbs.db
+npm-debug.log*
+.vercel/
