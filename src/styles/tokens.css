@@ -1,0 +1,141 @@
+/*
+ * Tokens do sistema de design (direção A · Log de Execução).
+ * Única fonte de verdade de cor, tipo, espaço e movimento: componentes usam
+ * estas variáveis, nunca o valor solto. A página /design lê este arquivo.
+ */
+
+:root {
+  /* ── Cores: paleta fechada ─────────────────────────────────────────── */
+  --cor-fundo: #0D1117;
+  --cor-painel: #161B22;
+  --cor-linha: #30363D;
+  --cor-texto: #E6EDF3;
+  --cor-apagado: #8B949E;
+  --cor-azul: #1F6FEB;       /* 4,08:1 no fundo: só preenchimento, borda, gráfico e texto ≥ 24px */
+  --cor-azul-claro: #58A6FF; /* azul para texto e links (7,49:1) */
+  --cor-verde: #3FB950;      /* OK */
+  --cor-ambar: #D29922;      /* WARN */
+
+  /* Papéis (o componente pede o papel, não a cor) */
+  --cor-link: var(--cor-azul-claro);
+  --cor-link-hover: var(--cor-texto);
+  --cor-foco: var(--cor-azul-claro);
+  --cor-botao-fundo: var(--cor-azul-claro);
+  --cor-botao-texto: var(--cor-fundo);
+  --cor-botao-fundo-hover: var(--cor-texto);
+  --cor-selecao: var(--cor-azul);
+
+  /* Proximidade do cursor (Z1): ponto longe → perto → muito perto */
+  --cor-prox-longe: var(--cor-linha);
+  --cor-prox-perto: var(--cor-azul);
+  --cor-prox-muito-perto: var(--cor-verde);
+  --cor-prox-centro: var(--cor-texto);
+
+  /* ── Tipografia ────────────────────────────────────────────────────── */
+  --fonte-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, 'Liberation Mono', monospace;
+
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-forte: 700;
+
+  /* Escala fluida: cresce em linha reta de 390 px (celular) até 1440 px (desktop) */
+  --texto-xs: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);  /* 12 → 13 px */
+  --texto-sm: clamp(0.8125rem, 0.7893rem + 0.0952vw, 0.875rem); /* 13 → 14 px */
+  --texto-base: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);   /* 15 → 16 px */
+  --texto-md: clamp(1.0625rem, 0.9929rem + 0.2857vw, 1.25rem);  /* 17 → 20 px */
+  --texto-lg: clamp(1.25rem, 1.0643rem + 0.7619vw, 1.75rem);    /* 20 → 28 px */
+  --texto-xl: clamp(1.625rem, 1.2071rem + 1.7143vw, 2.75rem);   /* 26 → 44 px */
+  --texto-2xl: clamp(2rem, 1.2571rem + 3.0476vw, 4rem);         /* 32 → 64 px */
+  --texto-3xl: clamp(2.5rem, 1.2rem + 5.3333vw, 6rem);          /* 40 → 96 px */
+
+  --entrelinha-justa: 1.1;
+  --entrelinha-media: 1.35;
+  --entrelinha-base: 1.6;
+  --tracking-titulo: -0.02em;
+  --tracking-rotulo: 0.06em;
+
+  /* ── Espaçamentos (base de 4 px) ───────────────────────────────────── */
+  --esp-1: 0.25rem; /*   4 */
+  --esp-2: 0.5rem;  /*   8 */
+  --esp-3: 0.75rem; /*  12 */
+  --esp-4: 1rem;    /*  16 */
+  --esp-5: 1.5rem;  /*  24 */
+  --esp-6: 2rem;    /*  32 */
+  --esp-7: 3rem;    /*  48 */
+  --esp-8: 4rem;    /*  64 */
+  --esp-9: 6rem;    /*  96 */
+  --esp-10: 8rem;   /* 128 */
+  --esp-secao: clamp(3rem, 1.1429rem + 7.619vw, 8rem); /* 48 → 128 px */
+
+  /* ── Grade de 12 colunas ───────────────────────────────────────────── */
+  --grade-colunas: 12;
+  --grade-gap: clamp(0.75rem, 0.4714rem + 1.1429vw, 1.5rem);     /* 12 → 24 px */
+  --margem-pagina: clamp(1rem, -0.1143rem + 4.5714vw, 4rem);     /* 16 → 64 px */
+  --largura-conteudo: 82rem;                                     /* 1312 px = 1440 − 2 × 64 */
+  --largura-texto: 68ch;                                         /* linha confortável de leitura */
+
+  /* ── Raios (terminal: cantos quase retos) ──────────────────────────── */
+  --raio-0: 0;
+  --raio-1: 2px;
+  --raio-2: 4px;
+  --raio-3: 6px;
+  --raio-pilula: 999px;
+  --raio-ponto: 50%;
+
+  --borda: 1px solid var(--cor-linha);
+
+  /* ── Movimento ─────────────────────────────────────────────────────── */
+  /* Interface */
+  --dur-rapida: 120ms;
+  --dur-media: 200ms;
+  --dur-lenta: 400ms;
+
+  /* Abertura M1 (A0 caos → A1 organizando → A2 tela de log): total ≈ 3,2 s */
+  --dur-a0-caos: 900ms;
+  --dur-a1-organizar: 1500ms;
+  --dur-a2-revelar: 800ms;
+
+  /* Zoom (Z1 raio de proximidade → Z2 mergulho → Z3 linha do tempo) */
+  --dur-z1-acender: 400ms; /* ponto acende/apaga ao entrar/sair do raio */
+  --dur-z2-mergulho: 1200ms;
+  --dur-z3-entrada: 600ms;
+
+  --ease-padrao: cubic-bezier(0.2, 0, 0, 1);          /* saída suave, uso geral */
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);        /* expo out: entra rápido e assenta */
+  --ease-caos: cubic-bezier(0.5, 0, 0.75, 0);         /* A0: fragmentos ganhando velocidade */
+  --ease-organizar: cubic-bezier(0.22, 1, 0.36, 1);   /* A1: fragmentos encaixando na fila */
+  --ease-mergulho: cubic-bezier(0.87, 0, 0.13, 1);    /* Z2: acelera e freia no ponto */
+
+  /* ── Camadas ───────────────────────────────────────────────────────── */
+  --camada-fundo: 0;   /* malha/WebGL */
+  --camada-conteudo: 1;
+  --camada-menu: 10;
+  --camada-cursor: 100;
+
+  /*
+   * Breakpoints (referência; CSS não aceita var() dentro de @media,
+   * então as media queries repetem estes números):
+   *   celular  390 px  → estilos base (mobile-first)
+   *   tablet   768 px  → @media (min-width: 768px)
+   *   desktop 1440 px  → @media (min-width: 1440px)
+   * Entre eles, tipo e espaço já se ajustam sozinhos pelos clamp() acima.
+   */
+  --bp-celular: 390px;
+  --bp-tablet: 768px;
+  --bp-desktop: 1440px;
+}
+
+/* Sem animação para quem pediu menos movimento: as durações viram zero */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-rapida: 0ms;
+    --dur-media: 0ms;
+    --dur-lenta: 0ms;
+    --dur-a0-caos: 0ms;
+    --dur-a1-organizar: 0ms;
+    --dur-a2-revelar: 0ms;
+    --dur-z1-acender: 0ms;
+    --dur-z2-mergulho: 0ms;
+    --dur-z3-entrada: 0ms;
+  }
+}
