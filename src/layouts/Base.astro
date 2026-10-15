@@ -1,0 +1,33 @@
+---
+// Layout comum: fonte hospedada no próprio site, tokens e estilos base.
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/tokens.css';
+import '../styles/base.css';
+// Só o arquivo do 1º paint: latino, normal (o variável cobre todos os pesos).
+import fonteLatina from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
+
+interface Props {
+  titulo: string;
+  descricao: string;
+  noindex?: boolean;
+}
+
+const { titulo, descricao, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo}</title>
+    <meta name="description" content={descricao} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#0D1117" />
+    <link rel="preload" href={fonteLatina} as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+    <slot />
+  </body>
+</html>
