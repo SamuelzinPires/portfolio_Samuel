@@ -1,0 +1,617 @@
+---
+// Página interna de conferência do sistema de design (não indexada).
+// Cores e escala de tipo são lidas do próprio tokens.css: não há valor repetido aqui.
+import Base from '../layouts/Base.astro';
+import tokensCss from '../styles/tokens.css?raw';
+
+// Contraste WCAG 2.x entre duas cores hex
+const luminancia = (hex: string) => {
+  const [r, g, b] = (hex.slice(1).match(/../g) ?? []).map((h) => {
+    const v = parseInt(h, 16) / 255;
+    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contraste = (a: string, b: string) => {
+  const [claro, escuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
+  return (claro + 0.05) / (escuro + 0.05);
+};
+
+const cores = [...tokensCss.matchAll(/--cor-([\w-]+):\s*(#[0-9A-Fa-f]{6});/g)].map(([, nome, hex]) => ({
+  nome,
+  hex: hex.toUpperCase(),
+}));
+const hexDe = (nome: string) => cores.find((c) => c.nome === nome)?.hex ?? '#000000';
+const fundo = hexDe('fundo');
+const painel = hexDe('painel');
+
+const usos: Record<string, string> = {
+  fundo: 'fundo da página',
+  painel: 'cartões, tabelas, blocos',
+  linha: 'bordas e divisórias (decorativo)',
+  texto: 'texto principal',
+  apagado: 'texto secundário, rótulos',
+  azul: 'preenchimento, borda, gráfico, texto ≥ 24 px',
+  'azul-claro': 'links, texto azul, foco, botão',
+  verde: 'OK, sucesso, em andamento',
+  ambar: 'WARN, atenção',
+};
+
+const nota = (r: number) => (r >= 4.5 ? 'AA texto' : r >= 3 ? 'só grande/gráfico' : 'decorativo');
+
+const escala = [...tokensCss.matchAll(/--texto-(\w+):[^;]+;\s*\/\*\s*(\d+) → (\d+) px/g)].map(([, nome, min, max]) => ({
+  nome,
+  min,
+  max,
+}));
+
+const espacos = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+const raios = ['0', '1', '2', '3', 'pilula'];
+const movimentos = [
+  { token: 'dur-media', ease: 'ease-padrao', rotulo: 'interface' },
+  { token: 'dur-a0-caos', ease: 'ease-caos', rotulo: 'A0 · caos' },
+  { token: 'dur-a1-organizar', ease: 'ease-organizar', rotulo: 'A1 · organizando' },
+  { token: 'dur-a2-revelar', ease: 'ease-saida', rotulo: 'A2 · revelar log' },
+  { token: 'dur-z1-acender', ease: 'ease-padrao', rotulo: 'Z1 · acender ponto' },
+  { token: 'dur-z2-mergulho', ease: 'ease-mergulho', rotulo: 'Z2 · mergulho' },
+  { token: 'dur-z3-entrada', ease: 'ease-saida', rotulo: 'Z3 · linha do tempo' },
+];
+const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\\d+ms)`))?.[1] ?? '';
+---
+
+<Base
+  titulo="Sistema de design · Samuel Pires de Miranda"
+  descricao="Página interna de conferência dos tokens visuais do portfólio."
+  noindex
+>
+  <main id="conteudo" class="container">
+    <header class="topo">
+      <p class="rotulo">// sistema de design · direção A · log de execução</p>
+      <h1>Tokens</h1>
+      <p class="apagado">
+        Página interna (noindex). Tudo aqui vem de <code>src/styles/tokens.css</code>.
+      </p>
+      <p class="largura" aria-live="off">
+        largura atual:
+        <span class="bp bp-celular">celular · &lt; 768 px</span>
+        <span class="bp bp-tablet">tablet · 768–1439 px</span>
+        <span class="bp bp-desktop">desktop · ≥ 1440 px</span>
+      </p>
+    </header>
+
+    <section aria-labelledby="t-cores">
+      <h2 id="t-cores"><span class="num">01</span> cores</h2>
+      <p class="apagado">Contraste WCAG calculado no build. Texto normal precisa de 4,5:1; texto grande e gráfico, 3:1.</p>
+      <ul class="cores" role="list">
+        {
+          cores.map((c) => {
+            const rf = contraste(c.hex, fundo);
+            const rp = contraste(c.hex, painel);
+            return (
+              <li class="cor">
+                <span class="amostra" style={`background: var(--cor-${c.nome})`} />
+                <div>
+                  <p class="cor-nome">--cor-{c.nome}</p>
+                  <p class="apagado">{c.hex} · {usos[c.nome]}</p>
+                  {c.nome !== 'fundo' && c.nome !== 'painel' && (
+                    <p class="contraste">
+                      <span>fundo {rf.toFixed(2)}:1</span>
+                      <span>painel {rp.toFixed(2)}:1</span>
+                      <span class:list={['selo', nota(Math.min(rf, rp)) === 'AA texto' ? 'selo--ok' : 'selo--aviso']}>
+                        {nota(Math.min(rf, rp))}
+                      </span>
+                    </p>
+                  )}
+                  {c.nome === 'fundo' && (
+                    <p class="contraste">
+                      <span>no botão (sobre azul-claro) {contraste(c.hex, hexDe('azul-claro')).toFixed(2)}:1</span>
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <h3 class="sub">proximidade do cursor (Z1)</h3>
+      <ul class="prox" role="list">
+        <li><span class="ponto" style="background: var(--cor-prox-longe); width: 4px; height: 4px" />longe</li>
+        <li><span class="ponto" style="background: var(--cor-prox-perto); width: 6px; height: 6px" />perto</li>
+        <li><span class="ponto" style="background: var(--cor-prox-muito-perto); width: 8px; height: 8px" />muito perto</li>
+        <li><span class="ponto ponto--centro" />cursor</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="t-tipo">
+      <h2 id="t-tipo"><span class="num">02</span> tipografia</h2>
+      <p class="apagado">JetBrains Mono Variable, hospedada no site. Escala fluida de 390 a 1440 px.</p>
+      <ul class="escala" role="list">
+        {
+          escala.map((e) => (
+            <li>
+              <p class="apagado meta">--texto-{e.nome} · {e.min} → {e.max} px</p>
+              <p style={`font-size: var(--texto-${e.nome}); line-height: var(--entrelinha-justa)`}>
+                Samuel Pires de Miranda
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h3 class="sub">pesos</h3>
+      <p style="font-weight: var(--peso-normal)">400 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
+      <p style="font-weight: var(--peso-medio)">500 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
+      <p style="font-weight: var(--peso-forte)">700 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
+
+      <h3 class="sub">glifos</h3>
+      <p>ã ç é õ ú â · 0O 1lI · {'{}'} [] () · -&gt; != =&gt; (sem ligaduras)</p>
+      <p class="apagado">
+        Fora da fonte (caem na do sistema): → ↗ ★ ✓ · em SVG:
+        <svg class="icone inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+        <svg class="icone inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+        <svg class="icone inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z" fill="currentColor" /></svg>
+      </p>
+
+      <h3 class="sub">em uso</h3>
+      <div class="log">
+        <p><span class="verde">[ OK ]</span> extract · 643 registros</p>
+        <p><span class="ambar">[WARN]</span> transform · 2 nulos tratados</p>
+        <p><span class="azul">[INFO]</span> load · tabela <code>projetos</code></p>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-esp">
+      <h2 id="t-esp"><span class="num">03</span> espaçamento</h2>
+      <ul class="espacos" role="list">
+        {
+          espacos.map((n) => (
+            <li>
+              <span class="apagado meta">--esp-{n}</span>
+              <span class="barra" style={`width: var(--esp-${n})`} />
+            </li>
+          ))
+        }
+        <li>
+          <span class="apagado meta">--esp-secao</span>
+          <span class="barra barra--fluida" style="width: var(--esp-secao)" />
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="t-grade">
+      <h2 id="t-grade"><span class="num">04</span> grade de 12 colunas</h2>
+      <p class="apagado">Margem 16 → 64 px, espaço entre colunas 12 → 24 px, largura máxima 1312 px.</p>
+      <div class="grade demo-grade" aria-hidden="true">
+        {Array.from({ length: 12 }, (_, i) => <span class="coluna">{i + 1}</span>)}
+      </div>
+      <div class="grade demo-spans">
+        <div class="bloco span-a">12 → 6 → 4</div>
+        <div class="bloco span-a">12 → 6 → 4</div>
+        <div class="bloco span-b">12 → 12 → 4</div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-raio">
+      <h2 id="t-raio"><span class="num">05</span> raios</h2>
+      <ul class="raios" role="list">
+        {
+          raios.map((r) => (
+            <li>
+              <span class="caixa" style={`border-radius: var(--raio-${r})`} />
+              <span class="apagado meta">--raio-{r}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section aria-labelledby="t-mov">
+      <h2 id="t-mov"><span class="num">06</span> movimento</h2>
+      <p class="apagado">Valores de partida; o ajuste fino é nas Partes 3 e 4. Com “reduzir movimento” ligado, tudo fica parado.</p>
+      <ul class="movs" role="list">
+        {
+          movimentos.map((m) => (
+            <li>
+              <p class="meta">
+                {m.rotulo} <span class="apagado">· --{m.token} {duracao(m.token)} · --{m.ease}</span>
+              </p>
+              <span class="trilho">
+                <span class="bolinha" style={`animation-duration: var(--${m.token}); animation-timing-function: var(--${m.ease})`} />
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section aria-labelledby="t-comp">
+      <h2 id="t-comp"><span class="num">07</span> componentes</h2>
+
+      <h3 class="sub">botões</h3>
+      <div class="linha-comp">
+        <button class="botao botao--primario" type="button">abrir projeto</button>
+        <button class="botao botao--secundario" type="button">ver como lista</button>
+      </div>
+
+      <h3 class="sub">links</h3>
+      <p>
+        Link interno: <a href="/">página inicial</a>
+      </p>
+      <p>
+        Link externo:
+        <a class="link-externo" href="https://github.com/SamuelzinPires" target="_blank" rel="noopener noreferrer">
+          github.com/SamuelzinPires
+          <svg class="icone" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+          <span class="sr-only">(abre em nova aba)</span>
+        </a>
+      </p>
+
+      <h3 class="sub">foco de teclado</h3>
+      <p class="apagado">Aperte Tab: o 1º item é “Pular para o conteúdo”, depois os botões e links acima. O contorno azul-claro mostra onde está o foco.</p>
+      <div class="linha-comp">
+        <span class="botao botao--secundario foco-exemplo" aria-hidden="true">exemplo de foco</span>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .topo {
+    padding-block: var(--esp-secao) var(--esp-7);
+    display: grid;
+    gap: var(--esp-3);
+  }
+
+  .topo h1 {
+    font-size: var(--texto-3xl);
+  }
+
+  .rotulo {
+    color: var(--cor-azul-claro);
+    font-size: var(--texto-sm);
+  }
+
+  .apagado {
+    color: var(--cor-apagado);
+  }
+
+  .verde {
+    color: var(--cor-verde);
+  }
+
+  .ambar {
+    color: var(--cor-ambar);
+  }
+
+  .azul {
+    color: var(--cor-azul-claro);
+  }
+
+  code {
+    font-family: inherit;
+    color: var(--cor-texto);
+    background: var(--cor-painel);
+    padding: 0.1em 0.35em;
+    border-radius: var(--raio-1);
+  }
+
+  .meta {
+    font-size: var(--texto-xs);
+  }
+
+  .largura {
+    font-size: var(--texto-sm);
+    color: var(--cor-apagado);
+  }
+
+  .bp {
+    display: none;
+    margin-left: 1ch;
+    color: var(--cor-verde);
+  }
+
+  .bp-celular {
+    display: inline;
+  }
+
+  @media (min-width: 768px) {
+    .bp-celular {
+      display: none;
+    }
+
+    .bp-tablet {
+      display: inline;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .bp-tablet {
+      display: none;
+    }
+
+    .bp-desktop {
+      display: inline;
+    }
+  }
+
+  section {
+    padding-block: var(--esp-7);
+    border-top: var(--borda);
+    display: grid;
+    gap: var(--esp-4);
+  }
+
+  section:last-of-type {
+    padding-bottom: var(--esp-secao);
+  }
+
+  h2 {
+    font-size: var(--texto-xl);
+  }
+
+  .num {
+    color: var(--cor-apagado);
+    font-weight: var(--peso-normal);
+    margin-right: var(--esp-2);
+  }
+
+  .sub {
+    margin-top: var(--esp-4);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+    letter-spacing: var(--tracking-rotulo);
+    text-transform: uppercase;
+    color: var(--cor-apagado);
+  }
+
+  ul[role='list'] {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* cores */
+  .cores {
+    display: grid;
+    gap: var(--esp-3);
+  }
+
+  @media (min-width: 768px) {
+    .cores {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .cores {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .cor {
+    display: flex;
+    gap: var(--esp-4);
+    align-items: flex-start;
+    padding: var(--esp-4);
+    background: var(--cor-painel);
+    border: var(--borda);
+    border-radius: var(--raio-3);
+    font-size: var(--texto-sm);
+  }
+
+  .amostra {
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--raio-2);
+    border: var(--borda);
+  }
+
+  .cor-nome {
+    font-weight: var(--peso-medio);
+  }
+
+  .contraste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-1) var(--esp-3);
+    margin-top: var(--esp-2);
+    font-size: var(--texto-xs);
+  }
+
+  .selo {
+    padding-inline: var(--esp-2);
+    border-radius: var(--raio-1);
+    border: 1px solid currentColor;
+  }
+
+  .selo--ok {
+    color: var(--cor-verde);
+  }
+
+  .selo--aviso {
+    color: var(--cor-ambar);
+  }
+
+  .prox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-6);
+  }
+
+  .prox li {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-2);
+    font-size: var(--texto-sm);
+  }
+
+  .ponto {
+    display: inline-block;
+    border-radius: var(--raio-ponto);
+  }
+
+  .ponto--centro {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--cor-prox-centro);
+  }
+
+  /* tipografia */
+  .escala {
+    display: grid;
+    gap: var(--esp-5);
+  }
+
+  .escala p:last-child {
+    overflow-wrap: anywhere;
+  }
+
+  .inline {
+    display: inline-block;
+    margin-left: 0.5ch;
+    vertical-align: -0.1em;
+    color: var(--cor-texto);
+  }
+
+  .log {
+    padding: var(--esp-4) var(--esp-5);
+    background: var(--cor-painel);
+    border: var(--borda);
+    border-radius: var(--raio-3);
+    font-size: var(--texto-sm);
+  }
+
+  /* espaçamento */
+  .espacos {
+    display: grid;
+    gap: var(--esp-2);
+  }
+
+  .espacos li {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    align-items: center;
+  }
+
+  .barra {
+    display: block;
+    height: 0.75rem;
+    background: var(--cor-azul);
+    border-radius: var(--raio-1);
+  }
+
+  .barra--fluida {
+    background: var(--cor-verde);
+  }
+
+  /* grade */
+  .demo-grade {
+    min-height: 6rem;
+  }
+
+  .coluna {
+    display: grid;
+    place-items: end center;
+    padding-bottom: var(--esp-1);
+    background: color-mix(in srgb, var(--cor-azul) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cor-azul) 60%, transparent);
+    font-size: var(--texto-xs);
+    color: var(--cor-apagado);
+  }
+
+  .bloco {
+    padding: var(--esp-4);
+    background: var(--cor-painel);
+    border: var(--borda);
+    border-radius: var(--raio-2);
+    font-size: var(--texto-sm);
+    grid-column: span 12;
+  }
+
+  @media (min-width: 768px) {
+    .span-a {
+      grid-column: span 6;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .span-a,
+    .span-b {
+      grid-column: span 4;
+    }
+  }
+
+  /* raios */
+  .raios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-5);
+  }
+
+  .raios li {
+    display: grid;
+    gap: var(--esp-2);
+    justify-items: start;
+  }
+
+  .caixa {
+    width: 4rem;
+    height: 3rem;
+    background: var(--cor-painel);
+    border: 1px solid var(--cor-azul-claro);
+  }
+
+  /* movimento */
+  .movs {
+    display: grid;
+    gap: var(--esp-4);
+  }
+
+  .trilho {
+    position: relative;
+    display: block;
+    height: 12px;
+    margin-top: var(--esp-2);
+    border-bottom: 1px dashed var(--cor-linha);
+  }
+
+  .bolinha {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--raio-ponto);
+    background: var(--cor-verde);
+    animation-name: atravessar;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  @keyframes atravessar {
+    to {
+      left: calc(100% - 8px);
+    }
+  }
+
+  /* componentes */
+  .linha-comp {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-3);
+  }
+
+  .link-externo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--esp-1);
+  }
+
+  .foco-exemplo {
+    outline: 2px solid var(--cor-foco);
+    outline-offset: 3px;
+    cursor: default;
+  }
+</style>
