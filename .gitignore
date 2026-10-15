@@ -6,8 +6,11 @@ dist/
 # segredos: nunca commitar
 .env*
 
-# documentação de acompanhamento (fica fora do Git)
+# documentação de acompanhamento e regras da IA (ficam fora do Git: o repo é público
+# e esses arquivos têm caminhos do computador e a estratégia de segurança das contas)
 Gerenciamento_Projeto/
+CLAUDE.md
+.claude/
 
 # sistema / editor
 .DS_Store
