@@ -2,6 +2,7 @@
  * Tokens do sistema de design (direção A · Log de Execução).
  * Única fonte de verdade de cor, tipo, espaço e movimento: componentes usam
  * estas variáveis, nunca o valor solto. A página /design lê este arquivo.
+ * Revisado em 19/10/2026 com os valores das telas aprovadas na 1C (Paper).
  */
 
 :root {
@@ -16,7 +17,7 @@
   --cor-verde: #3FB950;      /* OK */
   --cor-ambar: #D29922;      /* WARN */
 
-  /* Papéis (o componente pede o papel, não a cor) */
+  /* ── Cores de papel (o componente pede o papel, não a cor) ─────────── */
   --cor-link: var(--cor-azul-claro);
   --cor-link-hover: var(--cor-texto);
   --cor-foco: var(--cor-azul-claro);
@@ -24,6 +25,19 @@
   --cor-botao-texto: var(--cor-fundo);
   --cor-botao-fundo-hover: var(--cor-texto);
   --cor-selecao: var(--cor-azul);
+  --cor-ok: var(--cor-verde);             /* execução ok, em andamento */
+  --cor-falha: var(--cor-ambar);          /* falha, violação, falha de propósito */
+  --cor-estrela: var(--cor-ambar);        /* ★ projeto em destaque */
+  --cor-selecionado: var(--cor-texto);    /* anel/contorno do item aberto */
+  --cor-dado: var(--cor-azul);            /* pontos e barras neutras (só preenchimento) */
+  --cor-codigo-fundo: var(--cor-painel);  /* bloco de código, linha em hover */
+  --cor-metodo-get: var(--cor-azul-claro);
+  --cor-metodo-post: var(--cor-verde);
+  --cor-metodo-put: var(--cor-ambar);
+  --cor-metodo-delete: var(--cor-texto);
+  --cor-camada-bronze: var(--cor-apagado);
+  --cor-camada-prata: var(--cor-texto);
+  --cor-camada-ouro: var(--cor-ambar);
 
   /* Proximidade do cursor (Z1): ponto longe → perto → muito perto */
   --cor-prox-longe: var(--cor-linha);
@@ -35,23 +49,26 @@
   --fonte-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, 'Liberation Mono', monospace;
 
   --peso-normal: 400;
-  --peso-medio: 500;
+  --peso-medio: 600;
   --peso-forte: 700;
+  --peso-display: 800;
 
-  /* Escala fluida: cresce em linha reta de 390 px (celular) até 1440 px (desktop) */
-  --texto-xs: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);  /* 12 → 13 px */
-  --texto-sm: clamp(0.8125rem, 0.7893rem + 0.0952vw, 0.875rem); /* 13 → 14 px */
-  --texto-base: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);   /* 15 → 16 px */
-  --texto-md: clamp(1.0625rem, 0.9929rem + 0.2857vw, 1.25rem);  /* 17 → 20 px */
-  --texto-lg: clamp(1.25rem, 1.0643rem + 0.7619vw, 1.75rem);    /* 20 → 28 px */
-  --texto-xl: clamp(1.625rem, 1.2071rem + 1.7143vw, 2.75rem);   /* 26 → 44 px */
-  --texto-2xl: clamp(2rem, 1.2571rem + 3.0476vw, 4rem);         /* 32 → 64 px */
-  --texto-3xl: clamp(2.5rem, 1.2rem + 5.3333vw, 6rem);          /* 40 → 96 px */
+  /* Tamanhos por papel. Os fluidos crescem em linha reta de 390 px (celular) até 1440 px (desktop) */
+  --texto-titulo: clamp(2.5rem, 1.6643rem + 3.4286vw, 4.75rem);  /* 40 → 76 px · h1 de página, nome no A2 */
+  --texto-numero: clamp(2.75rem, 2.3786rem + 1.5238vw, 3.75rem); /* 44 → 60 px · números grandes do topo */
+  --texto-secao: clamp(1.5rem, 1.4071rem + 0.381vw, 1.75rem);    /* 24 → 28 px · h2 de seção */
+  --texto-lead: clamp(0.9375rem, 0.8679rem + 0.2857vw, 1.125rem); /* 15 → 18 px · subtítulo, pergunta do projeto */
+  --texto-base: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);    /* 15 → 16 px · corpo */
+  --texto-nav: 0.875rem;                                          /* 14 → 14 px · menu, botões, células */
+  --texto-rotulo: 0.8125rem;                                      /* 13 → 13 px · rótulos, metadados, legendas */
+  --texto-micro: 0.75rem;                                         /* 12 → 12 px · eixos de gráfico, log no celular */
 
-  --entrelinha-justa: 1.1;
-  --entrelinha-media: 1.35;
-  --entrelinha-base: 1.6;
-  --tracking-titulo: -0.02em;
+  --entrelinha-titulo: 1.05;
+  --entrelinha-secao: 1.2;
+  --entrelinha-media: 1.4;
+  --entrelinha-texto: 1.7;
+  --tracking-titulo: -0.035em;
+  --tracking-secao: -0.02em;
   --tracking-rotulo: 0.06em;
 
   /* ── Espaçamentos (base de 4 px) ───────────────────────────────────── */
@@ -65,20 +82,26 @@
   --esp-8: 4rem;    /*  64 */
   --esp-9: 6rem;    /*  96 */
   --esp-10: 8rem;   /* 128 */
-  --esp-secao: clamp(3rem, 1.1429rem + 7.619vw, 8rem); /* 48 → 128 px */
+  --esp-secao: clamp(3rem, 1.1429rem + 7.619vw, 8rem);           /* 48 → 128 px · topo do hero */
+  --esp-secao-topo: clamp(1.75rem, 1.4714rem + 1.1429vw, 2.5rem); /* 28 → 40 px · da linha da seção ao conteúdo */
+  --esp-secao-base: clamp(2.75rem, 2.1rem + 2.6667vw, 4.5rem);    /* 44 → 72 px · fim de cada seção */
 
-  /* ── Grade de 12 colunas ───────────────────────────────────────────── */
+  /* ── Grade e colunas ───────────────────────────────────────────────── */
   --grade-colunas: 12;
   --grade-gap: clamp(0.75rem, 0.4714rem + 1.1429vw, 1.5rem);     /* 12 → 24 px */
   --margem-pagina: clamp(1rem, -0.1143rem + 4.5714vw, 4rem);     /* 16 → 64 px */
   --largura-conteudo: 82rem;                                     /* 1312 px = 1440 − 2 × 64 */
   --largura-texto: 68ch;                                         /* linha confortável de leitura */
+  --largura-lateral: 18.5rem;                                    /* 296 px · coluna lateral da página de projeto */
+  --gap-colunas: clamp(3rem, 1.8857rem + 4.5714vw, 6rem);        /* 48 → 96 px · entre coluna principal e lateral */
+  --alvo-toque: 44px;                                            /* menor área tocável no celular */
 
   /* ── Raios (terminal: cantos quase retos) ──────────────────────────── */
   --raio-0: 0;
   --raio-1: 2px;
-  --raio-2: 4px;
-  --raio-3: 6px;
+  --raio-2: 4px;      /* botão, bloco de código, nó de DAG */
+  --raio-3: 6px;      /* cartão de canal, nó de certificado */
+  --raio-painel: 14px; /* cantos de cima do painel fixo do celular */
   --raio-pilula: 999px;
   --raio-ponto: 50%;
 
@@ -110,18 +133,21 @@
   --camada-fundo: 0;   /* malha/WebGL */
   --camada-conteudo: 1;
   --camada-menu: 10;
+  --camada-painel: 20; /* painel fixo do celular */
   --camada-cursor: 100;
 
   /*
    * Breakpoints (referência; CSS não aceita var() dentro de @media,
    * então as media queries repetem estes números):
-   *   celular  390 px  → estilos base (mobile-first)
-   *   tablet   768 px  → @media (min-width: 768px)
-   *   desktop 1440 px  → @media (min-width: 1440px)
+   *   celular   390 px  → estilos base (mobile-first)
+   *   tablet    768 px  → @media (min-width: 768px)
+   *   notebook 1024 px  → @media (min-width: 1024px): tabela da lista e coluna lateral do projeto
+   *   desktop  1440 px  → @media (min-width: 1440px)
    * Entre eles, tipo e espaço já se ajustam sozinhos pelos clamp() acima.
    */
   --bp-celular: 390px;
   --bp-tablet: 768px;
+  --bp-notebook: 1024px;
   --bp-desktop: 1440px;
 }
 

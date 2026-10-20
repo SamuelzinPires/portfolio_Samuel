@@ -20,7 +20,7 @@ body {
   font-family: var(--fonte-mono);
   font-size: var(--texto-base);
   font-weight: var(--peso-normal);
-  line-height: var(--entrelinha-base);
+  line-height: var(--entrelinha-texto);
   /* JetBrains Mono junta "->" e "!=" em um símbolo só: bom no editor, confuso no texto corrido */
   font-variant-ligatures: none;
   -webkit-font-smoothing: antialiased;
@@ -38,9 +38,19 @@ figure {
 h1,
 h2,
 h3 {
-  line-height: var(--entrelinha-justa);
+  line-height: var(--entrelinha-secao);
+  letter-spacing: var(--tracking-secao);
+  font-weight: var(--peso-display);
+}
+
+h1 {
+  font-size: var(--texto-titulo);
+  line-height: var(--entrelinha-titulo);
   letter-spacing: var(--tracking-titulo);
-  font-weight: var(--peso-forte);
+}
+
+h2 {
+  font-size: var(--texto-secao);
 }
 
 img,
@@ -119,12 +129,12 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: var(--esp-2);
-  min-height: 44px; /* alvo de toque confortável no celular */
+  min-height: var(--alvo-toque); /* alvo de toque confortável no celular */
   padding: var(--esp-2) var(--esp-5);
   border: 1px solid transparent;
   border-radius: var(--raio-2);
   font: inherit;
-  font-size: var(--texto-sm);
+  font-size: var(--texto-nav);
   font-weight: var(--peso-medio);
   text-decoration: none;
   cursor: pointer;
@@ -153,6 +163,13 @@ a:hover {
 .botao--secundario:hover {
   border-color: var(--cor-azul-claro);
   color: var(--cor-texto);
+}
+
+/* Botão de largura total (painel fixo do celular) */
+.botao--bloco {
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
 }
 
 /* Ícone desenhado em SVG: a fonte hospedada não tem → ↗ ★ */
