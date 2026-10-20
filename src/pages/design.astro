@@ -1,6 +1,7 @@
 ---
 // Página interna de conferência do sistema de design (não indexada).
 // Cores e escala de tipo são lidas do próprio tokens.css: não há valor repetido aqui.
+// A galeria (08–15) usa as classes de src/styles/componentes.css com conteúdo real dos projetos.
 import Base from '../layouts/Base.astro';
 import tokensCss from '../styles/tokens.css?raw';
 
@@ -27,26 +28,43 @@ const painel = hexDe('painel');
 
 const usos: Record<string, string> = {
   fundo: 'fundo da página',
-  painel: 'cartões, tabelas, blocos',
+  painel: 'código, linha em hover, painel do celular',
   linha: 'bordas e divisórias (decorativo)',
   texto: 'texto principal',
   apagado: 'texto secundário, rótulos',
   azul: 'preenchimento, borda, gráfico, texto ≥ 24 px',
   'azul-claro': 'links, texto azul, foco, botão',
   verde: 'OK, sucesso, em andamento',
-  ambar: 'WARN, atenção',
+  ambar: 'WARN, falha, destaque ★',
 };
 
 const nota = (r: number) => (r >= 4.5 ? 'AA texto' : r >= 3 ? 'só grande/gráfico' : 'decorativo');
 
-const escala = [...tokensCss.matchAll(/--texto-(\w+):[^;]+;\s*\/\*\s*(\d+) → (\d+) px/g)].map(([, nome, min, max]) => ({
-  nome,
-  min,
-  max,
+// Papéis: --cor-papel: var(--cor-base)
+const papeis = [...tokensCss.matchAll(/--cor-([\w-]+):\s*var\(--cor-([\w-]+)\);/g)].map(([, papel, base]) => ({
+  papel,
+  base,
+  hex: hexDe(base),
 }));
 
+// Pares de texto usados pelos componentes novos
+const pares = [
+  { texto: 'texto', fundo: 'painel', onde: 'código, linha da lista em hover, painel do celular' },
+  { texto: 'apagado', fundo: 'painel', onde: 'rótulos dentro do painel e do código' },
+  { texto: 'azul-claro', fundo: 'painel', onde: 'links e "verificar" sobre o painel' },
+  { texto: 'ambar', fundo: 'fundo', onde: 'falha, método PUT, ★ destaque' },
+  { texto: 'ambar', fundo: 'painel', onde: '★ destaque no painel do celular' },
+  { texto: 'verde', fundo: 'fundo', onde: 'ok, em andamento, POST' },
+  { texto: 'fundo', fundo: 'azul-claro', onde: 'botão primário, alternador ativo' },
+].map((p) => ({ ...p, razao: contraste(hexDe(p.texto), hexDe(p.fundo)) }));
+
+const escala = [
+  ...tokensCss.matchAll(/--texto-(\w+):[^;]+;\s*\/\*\s*(\d+) → (\d+) px(?:\s*·\s*([^*]+?))?\s*\*\//g),
+].map(([, nome, min, max, uso]) => ({ nome, min, max, uso: uso ?? '' }));
+
 const espacos = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-const raios = ['0', '1', '2', '3', 'pilula'];
+const espacosFluidos = ['secao', 'secao-topo', 'secao-base', 'gap-colunas'];
+const raios = ['1', '2', '3', 'painel', 'pilula'];
 const movimentos = [
   { token: 'dur-media', ease: 'ease-padrao', rotulo: 'interface' },
   { token: 'dur-a0-caos', ease: 'ease-caos', rotulo: 'A0 · caos' },
@@ -57,54 +75,75 @@ const movimentos = [
   { token: 'dur-z3-entrada', ease: 'ease-saida', rotulo: 'Z3 · linha do tempo' },
 ];
 const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\\d+ms)`))?.[1] ?? '';
+
+// Dados reais usados na galeria (Conteudo-Projetos.md)
+const renovavel = [
+  { nome: 'Nordeste', valor: 98.14 },
+  { nome: 'Sul', valor: 89.91 },
+  { nome: 'Sudeste/C-Oeste', valor: 83.94 },
+  { nome: 'Norte', valor: 56.11 },
+];
+const ci = [
+  ['14:29', 'falha'], ['15:12', 'falha'], ['15:38', 'falha'], ['15:38', 'falha'], ['15:48', 'falha'],
+  ['15:48', 'falha'], ['22:14', 'falha'], ['22:15', 'falha'], ['22:45', 'ok'], ['22:45', 'ok'],
+  ['00:05', 'ok'], ['00:05', 'ok'], ['00:06', 'ok'],
+];
+const endpoints = [
+  { metodo: 'get', rota: '/vagas' },
+  { metodo: 'post', rota: '/vagas' },
+  { metodo: 'put', rota: '/vagas/{id}' },
+  { metodo: 'delete', rota: '/vagas/{id}' },
+];
+const linhas = [
+  { num: '008', nome: 'Airflow ETL Orchestration', tipo: 'orquestração', periodo: 'ago/2026 → hoje', andamento: true, stack: 'Airflow 3 · Postgres · Pandera +3', destaque: 'backfill de 284 dias', estrela: true },
+  { num: '007', nome: 'Data Quality Engineering', tipo: 'qualidade', periodo: 'ago/2026', stack: 'DuckDB · Pandera · Pandas +1', destaque: '6 regras · 541 mil linhas', estrela: true },
+  { num: '005', nome: 'Northwind SQL Analytics', tipo: 'sql', periodo: 'jun/2026', stack: 'PostgreSQL · Docker · PgAdmin +1', destaque: '7 views de negócio', estrela: false },
+];
 ---
 
 <Base
   titulo="Sistema de design · Samuel Pires de Miranda"
-  descricao="Página interna de conferência dos tokens visuais do portfólio."
+  descricao="Página interna de conferência dos tokens e componentes visuais do portfólio."
   noindex
 >
   <main id="conteudo" class="container">
-    <header class="topo">
-      <p class="rotulo">// sistema de design · direção A · log de execução</p>
-      <h1>Tokens</h1>
-      <p class="apagado">
-        Página interna (noindex). Tudo aqui vem de <code>src/styles/tokens.css</code>.
+    <header class="ds-topo">
+      <p class="rotulo-comentario">// sistema de design · direção A · log de execução</p>
+      <h1 class="titulo-pagina">Sistema de design</h1>
+      <p class="lead">
+        Página interna (noindex). Tokens em <code class="ds-codigo-inline">src/styles/tokens.css</code>, componentes em
+        <code class="ds-codigo-inline">src/styles/componentes.css</code>, com os valores das telas aprovadas na 1C.
       </p>
-      <p class="largura" aria-live="off">
+      <p class="ds-largura">
         largura atual:
-        <span class="bp bp-celular">celular · &lt; 768 px</span>
-        <span class="bp bp-tablet">tablet · 768–1439 px</span>
-        <span class="bp bp-desktop">desktop · ≥ 1440 px</span>
+        <span class="ds-bp ds-bp-celular">celular · &lt; 768 px</span>
+        <span class="ds-bp ds-bp-tablet">tablet · 768–1023 px</span>
+        <span class="ds-bp ds-bp-notebook">notebook · 1024–1439 px</span>
+        <span class="ds-bp ds-bp-desktop">desktop · ≥ 1440 px</span>
       </p>
     </header>
 
-    <section aria-labelledby="t-cores">
-      <h2 id="t-cores"><span class="num">01</span> cores</h2>
-      <p class="apagado">Contraste WCAG calculado no build. Texto normal precisa de 4,5:1; texto grande e gráfico, 3:1.</p>
-      <ul class="cores" role="list">
+    <section class="ds-secao" aria-labelledby="t-cores">
+      <h2 id="t-cores"><span class="ds-num">01</span> cores</h2>
+      <p class="ds-apagado">Contraste WCAG calculado no build. Texto normal precisa de 4,5:1; texto grande e gráfico, 3:1.</p>
+      <ul class="ds-cores" role="list">
         {
           cores.map((c) => {
             const rf = contraste(c.hex, fundo);
             const rp = contraste(c.hex, painel);
             return (
-              <li class="cor">
-                <span class="amostra" style={`background: var(--cor-${c.nome})`} />
+              <li class="ds-cor">
+                <span class="ds-amostra" style={`background: var(--cor-${c.nome})`} />
                 <div>
-                  <p class="cor-nome">--cor-{c.nome}</p>
-                  <p class="apagado">{c.hex} · {usos[c.nome]}</p>
+                  <p class="ds-cor-nome">--cor-{c.nome}</p>
+                  <p class="ds-apagado">{c.hex} · {usos[c.nome]}</p>
                   {c.nome !== 'fundo' && c.nome !== 'painel' && (
-                    <p class="contraste">
+                    <p class="ds-contraste">
                       <span>fundo {rf.toFixed(2)}:1</span>
                       <span>painel {rp.toFixed(2)}:1</span>
-                      <span class:list={['selo', nota(Math.min(rf, rp)) === 'AA texto' ? 'selo--ok' : 'selo--aviso']}>
+                      <span class:list={['ds-selo', nota(Math.min(rf, rp)) === 'AA texto' ? 'ds-selo--ok' : 'ds-selo--aviso']}>
                         {nota(Math.min(rf, rp))}
                       </span>
-                    </p>
-                  )}
-                  {c.nome === 'fundo' && (
-                    <p class="contraste">
-                      <span>no botão (sobre azul-claro) {contraste(c.hex, hexDe('azul-claro')).toFixed(2)}:1</span>
                     </p>
                   )}
                 </div>
@@ -114,24 +153,53 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
         }
       </ul>
 
-      <h3 class="sub">proximidade do cursor (Z1)</h3>
-      <ul class="prox" role="list">
-        <li><span class="ponto" style="background: var(--cor-prox-longe); width: 4px; height: 4px" />longe</li>
-        <li><span class="ponto" style="background: var(--cor-prox-perto); width: 6px; height: 6px" />perto</li>
-        <li><span class="ponto" style="background: var(--cor-prox-muito-perto); width: 8px; height: 8px" />muito perto</li>
-        <li><span class="ponto ponto--centro" />cursor</li>
+      <h3 class="ds-sub">papéis (o componente pede o papel, não a cor)</h3>
+      <ul class="ds-papeis" role="list">
+        {
+          papeis.map((p) => (
+            <li>
+              <span class="ds-amostra ds-amostra--pequena" style={`background: var(--cor-${p.papel})`} />
+              <span>--cor-{p.papel}</span>
+              <span class="ds-apagado">→ {p.base}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h3 class="ds-sub">pares de texto dos componentes</h3>
+      <ul class="ds-pares" role="list">
+        {
+          pares.map((p) => (
+            <li>
+              <span class="ds-par" style={`color: var(--cor-${p.texto}); background: var(--cor-${p.fundo})`}>Aa {p.texto}</span>
+              <span class:list={['ds-selo', p.razao >= 4.5 ? 'ds-selo--ok' : 'ds-selo--aviso']}>{p.razao.toFixed(2)}:1</span>
+              <span class="ds-apagado">sobre {p.fundo} · {p.onde}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h3 class="ds-sub">proximidade do cursor (Z1)</h3>
+      <ul class="ds-prox" role="list">
+        <li><span class="ds-ponto" style="background: var(--cor-prox-longe); width: 4px; height: 4px" />longe</li>
+        <li><span class="ds-ponto" style="background: var(--cor-prox-perto); width: 6px; height: 6px" />perto</li>
+        <li><span class="ds-ponto" style="background: var(--cor-prox-muito-perto); width: 8px; height: 8px" />muito perto</li>
+        <li><span class="ds-ponto ds-ponto--centro" />cursor</li>
       </ul>
     </section>
 
-    <section aria-labelledby="t-tipo">
-      <h2 id="t-tipo"><span class="num">02</span> tipografia</h2>
-      <p class="apagado">JetBrains Mono Variable, hospedada no site. Escala fluida de 390 a 1440 px.</p>
-      <ul class="escala" role="list">
+    <section class="ds-secao" aria-labelledby="t-tipo">
+      <h2 id="t-tipo"><span class="ds-num">02</span> tipografia</h2>
+      <p class="ds-apagado">JetBrains Mono Variable, hospedada no site. Tamanhos por papel; os fluidos crescem de 390 a 1440 px.</p>
+      <ul class="ds-escala" role="list">
         {
           escala.map((e) => (
             <li>
-              <p class="apagado meta">--texto-{e.nome} · {e.min} → {e.max} px</p>
-              <p style={`font-size: var(--texto-${e.nome}); line-height: var(--entrelinha-justa)`}>
+              <p class="ds-meta">
+                --texto-{e.nome} · {e.min === e.max ? `${e.min} px` : `${e.min} → ${e.max} px`}
+                {e.uso && <span> · {e.uso}</span>}
+              </p>
+              <p style={`font-size: var(--texto-${e.nome}); line-height: var(--entrelinha-secao)`}>
                 Samuel Pires de Miranda
               </p>
             </li>
@@ -139,85 +207,87 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
         }
       </ul>
 
-      <h3 class="sub">pesos</h3>
+      <h3 class="ds-sub">pesos</h3>
       <p style="font-weight: var(--peso-normal)">400 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
-      <p style="font-weight: var(--peso-medio)">500 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
+      <p style="font-weight: var(--peso-medio)">600 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
       <p style="font-weight: var(--peso-forte)">700 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
+      <p style="font-weight: var(--peso-display)">800 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
 
-      <h3 class="sub">glifos</h3>
+      <h3 class="ds-sub">glifos</h3>
       <p>ã ç é õ ú â · 0O 1lI · {'{}'} [] () · -&gt; != =&gt; (sem ligaduras)</p>
-      <p class="apagado">
+      <p class="ds-apagado">
         Fora da fonte (caem na do sistema): → ↗ ★ ✓ · em SVG:
-        <svg class="icone inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
-        <svg class="icone inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
-        <svg class="icone inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z" fill="currentColor" /></svg>
+        <svg class="icone ds-inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+        <svg class="icone ds-inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+        <svg class="icone ds-inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z" fill="currentColor" /></svg>
       </p>
-
-      <h3 class="sub">em uso</h3>
-      <div class="log">
-        <p><span class="verde">[ OK ]</span> extract · 643 registros</p>
-        <p><span class="ambar">[WARN]</span> transform · 2 nulos tratados</p>
-        <p><span class="azul">[INFO]</span> load · tabela <code>projetos</code></p>
-      </div>
     </section>
 
-    <section aria-labelledby="t-esp">
-      <h2 id="t-esp"><span class="num">03</span> espaçamento</h2>
-      <ul class="espacos" role="list">
+    <section class="ds-secao" aria-labelledby="t-esp">
+      <h2 id="t-esp"><span class="ds-num">03</span> espaçamento</h2>
+      <ul class="ds-espacos" role="list">
         {
           espacos.map((n) => (
             <li>
-              <span class="apagado meta">--esp-{n}</span>
-              <span class="barra" style={`width: var(--esp-${n})`} />
+              <span class="ds-apagado ds-meta">--esp-{n}</span>
+              <span class="ds-barra-esp" style={`width: var(--esp-${n})`} />
+            </li>
+          ))
+        }
+        {
+          espacosFluidos.map((n) => (
+            <li>
+              <span class="ds-apagado ds-meta">--{n.startsWith('gap') ? n : `esp-${n}`}</span>
+              <span class="ds-barra-esp ds-barra-esp--fluida" style={`width: var(--${n.startsWith('gap') ? n : `esp-${n}`})`} />
             </li>
           ))
         }
         <li>
-          <span class="apagado meta">--esp-secao</span>
-          <span class="barra barra--fluida" style="width: var(--esp-secao)" />
+          <span class="ds-apagado ds-meta">--alvo-toque</span>
+          <span class="ds-barra-esp ds-barra-esp--toque" style="width: var(--alvo-toque); height: var(--alvo-toque)" />
         </li>
       </ul>
     </section>
 
-    <section aria-labelledby="t-grade">
-      <h2 id="t-grade"><span class="num">04</span> grade de 12 colunas</h2>
-      <p class="apagado">Margem 16 → 64 px, espaço entre colunas 12 → 24 px, largura máxima 1312 px.</p>
-      <div class="grade demo-grade" aria-hidden="true">
-        {Array.from({ length: 12 }, (_, i) => <span class="coluna">{i + 1}</span>)}
+    <section class="ds-secao" aria-labelledby="t-grade">
+      <h2 id="t-grade"><span class="ds-num">04</span> grade e colunas</h2>
+      <p class="ds-apagado">Margem 16 → 64 px, espaço entre colunas 12 → 24 px, largura máxima 1312 px.</p>
+      <div class="grade ds-demo-grade" aria-hidden="true">
+        {Array.from({ length: 12 }, (_, i) => <span class="ds-coluna">{i + 1}</span>)}
       </div>
-      <div class="grade demo-spans">
-        <div class="bloco span-a">12 → 6 → 4</div>
-        <div class="bloco span-a">12 → 6 → 4</div>
-        <div class="bloco span-b">12 → 12 → 4</div>
+      <p class="ds-apagado">Página de projeto: coluna principal + lateral de 296 px a partir de 1024 px; abaixo disso a lateral desce.</p>
+      <div class="colunas-projeto" aria-hidden="true">
+        <div class="ds-bloco">coluna principal · minmax(0, 1fr)</div>
+        <div class="ds-bloco">lateral · --largura-lateral</div>
       </div>
     </section>
 
-    <section aria-labelledby="t-raio">
-      <h2 id="t-raio"><span class="num">05</span> raios</h2>
-      <ul class="raios" role="list">
+    <section class="ds-secao" aria-labelledby="t-raio">
+      <h2 id="t-raio"><span class="ds-num">05</span> raios</h2>
+      <ul class="ds-raios" role="list">
         {
           raios.map((r) => (
             <li>
-              <span class="caixa" style={`border-radius: var(--raio-${r})`} />
-              <span class="apagado meta">--raio-{r}</span>
+              <span class="ds-caixa" style={`border-radius: var(--raio-${r})`} />
+              <span class="ds-apagado ds-meta">--raio-{r}</span>
             </li>
           ))
         }
       </ul>
     </section>
 
-    <section aria-labelledby="t-mov">
-      <h2 id="t-mov"><span class="num">06</span> movimento</h2>
-      <p class="apagado">Valores de partida; o ajuste fino é nas Partes 3 e 4. Com “reduzir movimento” ligado, tudo fica parado.</p>
-      <ul class="movs" role="list">
+    <section class="ds-secao" aria-labelledby="t-mov">
+      <h2 id="t-mov"><span class="ds-num">06</span> movimento</h2>
+      <p class="ds-apagado">Valores de partida; o ajuste fino é nas Partes 3 e 4. Com “reduzir movimento” ligado, tudo fica parado.</p>
+      <ul class="ds-movs" role="list">
         {
           movimentos.map((m) => (
             <li>
-              <p class="meta">
-                {m.rotulo} <span class="apagado">· --{m.token} {duracao(m.token)} · --{m.ease}</span>
+              <p class="ds-meta">
+                {m.rotulo} <span class="ds-apagado">· --{m.token} {duracao(m.token)} · --{m.ease}</span>
               </p>
-              <span class="trilho">
-                <span class="bolinha" style={`animation-duration: var(--${m.token}); animation-timing-function: var(--${m.ease})`} />
+              <span class="ds-trilho">
+                <span class="ds-bolinha" style={`animation-duration: var(--${m.token}); animation-timing-function: var(--${m.ease})`} />
               </span>
             </li>
           ))
@@ -225,70 +295,313 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
       </ul>
     </section>
 
-    <section aria-labelledby="t-comp">
-      <h2 id="t-comp"><span class="num">07</span> componentes</h2>
-
-      <h3 class="sub">botões</h3>
-      <div class="linha-comp">
-        <button class="botao botao--primario" type="button">abrir projeto</button>
-        <button class="botao botao--secundario" type="button">ver como lista</button>
+    <section class="ds-secao" aria-labelledby="t-botoes">
+      <h2 id="t-botoes"><span class="ds-num">07</span> botões, links e foco</h2>
+      <div class="ds-linha-comp">
+        <a class="botao botao--primario" href="#t-lista">[ ver projetos ]</a>
+        <a class="botao botao--secundario" href="#t-contato">[ contato ]</a>
       </div>
-
-      <h3 class="sub">links</h3>
+      <p>Link interno: <a href="/">página inicial</a></p>
       <p>
-        Link interno: <a href="/">página inicial</a>
-      </p>
-      <p>
-        Link externo:
-        <a class="link-externo" href="https://github.com/SamuelzinPires" target="_blank" rel="noopener noreferrer">
+        Link externo:{' '}
+        <a class="ds-link-externo" href="https://github.com/SamuelzinPires" target="_blank" rel="noopener noreferrer">
           github.com/SamuelzinPires
           <svg class="icone" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
           <span class="sr-only">(abre em nova aba)</span>
         </a>
       </p>
+      <p class="ds-apagado">Aperte Tab: o 1º item é “Pular para o conteúdo”; depois cada link e botão da página mostra o contorno azul-claro.</p>
+      <div class="ds-linha-comp">
+        <span class="botao botao--secundario ds-foco-exemplo" aria-hidden="true">exemplo de foco</span>
+      </div>
+    </section>
 
-      <h3 class="sub">foco de teclado</h3>
-      <p class="apagado">Aperte Tab: o 1º item é “Pular para o conteúdo”, depois os botões e links acima. O contorno azul-claro mostra onde está o foco.</p>
-      <div class="linha-comp">
-        <span class="botao botao--secundario foco-exemplo" aria-hidden="true">exemplo de foco</span>
+    <section class="ds-secao" aria-labelledby="t-nav">
+      <h2 id="t-nav"><span class="ds-num">08</span> navegação</h2>
+      <p class="ds-apagado">Barra (2 linhas abaixo de 768 px), migalha e rodapé. O item da página atual leva aria-current.</p>
+      <div class="ds-moldura">
+        <header class="barra">
+          <p class="barra__prompt"><span class="barra__usuario">samuel@dados</span>:~/projetos$</p>
+          <nav aria-label="Exemplo de menu">
+            <ul class="barra__nav" role="list">
+              <li><a class="barra__link" href="#t-lista" aria-current="page">./projetos</a></li>
+              <li><a class="barra__link" href="#t-contato">./certificações</a></li>
+              <li><a class="barra__link" href="#t-contato">./contato</a></li>
+            </ul>
+          </nav>
+        </header>
+        <p class="migalha" style="padding-top: var(--esp-7)">
+          <a href="#t-lista">← projetos</a><span>/ 008 · orquestração</span><span class="migalha__estado--andamento">● em andamento</span>
+        </p>
+        <footer class="rodape" style="margin-top: var(--esp-7)">
+          <span>Goiânia, GO · aberto a remoto ou híbrido</span>
+          <ul class="rodape__links" role="list">
+            <li><a href="#t-contato">e-mail</a></li>
+            <li><a href="#t-contato">LinkedIn</a></li>
+            <li><a href="#t-contato">GitHub</a></li>
+          </ul>
+        </footer>
+      </div>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-cabeca">
+      <h2 id="t-cabeca"><span class="ds-num">09</span> cabeçalho de projeto</h2>
+      <div class="hero-projeto">
+        <div class="hero-projeto__texto">
+          <p class="titulo-pagina" role="presentation">Airflow ETL Orchestration</p>
+          <p class="lead">Qual percentual da energia gerada no Brasil foi renovável, por dia e por subsistema? Uma DAG diária responde com os dados públicos do ONS.</p>
+        </div>
+        <dl class="numeros">
+          <div class="numero"><dt class="numero__rotulo">dias reprocessados no backfill</dt><dd class="numero__valor">284</dd></div>
+          <div class="numero"><dt class="numero__rotulo">falhas dentro do intervalo</dt><dd class="numero__valor numero__valor--ok">0</dd></div>
+        </dl>
+      </div>
+      <p class="rotulo-comentario">// rótulo de seção: comentário de código, 13 px, tracking aberto</p>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-conteudo">
+      <h2 id="t-conteudo"><span class="ds-num">10</span> conteúdo do projeto</h2>
+      <div class="colunas-projeto">
+        <div class="colunas-projeto__principal">
+          <div class="ds-grupo">
+          <p class="ds-h3">Por que existe</p>
+          <div class="texto-corrido">
+            <p>O ONS publica a geração de energia de cada hora num único arquivo por ano. Uma DAG que roda todo dia precisa pegar exatamente o dia da execução e gravar de um jeito que reprocessar não duplique.</p>
+            <p>Escolhi essa fonte por isso: com uma data em cada linha, idempotência e backfill deixam de ser exercício.</p>
+          </div>
+          </div>
+          <div class="ds-grupo">
+          <div class="secao__cabeca">
+            <p class="ds-h3">Como funciona</p><span class="secao__meta">@daily · UTC · retries: 3</span>
+          </div>
+          <ol class="dag" role="list">
+            <li class="dag__no"><span class="dag__titulo">extrair</span><span class="dag__desc">baixa o CSV anual do ONS; o XCom leva só o caminho</span></li>
+            <li class="dag__no"><span class="dag__titulo">transformar</span><span class="dag__desc">filtra o dia, tira a média por subsistema, calcula o %</span></li>
+            <li class="dag__no"><span class="dag__titulo">validar</span><span class="dag__desc">Pandera barra dado ruim antes da carga</span></li>
+            <li class="dag__no"><span class="dag__titulo">carregar</span><span class="dag__desc">Postgres: apaga o dia e insere, numa transação</span></li>
+          </ol>
+          </div>
+          <div class="ds-grupo">
+          <p class="ds-h3">Decisões</p>
+          <ol class="decisoes" role="list">
+            <li class="decisoes__item"><span class="decisoes__titulo">Dois Postgres</span><span class="decisoes__motivo">O banco de metadados do Airflow não guarda dado do pipeline. Misturar os dois prende o dado à ferramenta.</span></li>
+            <li class="decisoes__item"><span class="decisoes__titulo">Agenda em UTC</span><span class="decisoes__motivo">O ONS publica às 12h e às 19h UTC. O fuso local só entra dentro da task.</span></li>
+          </ol>
+          </div>
+          <div class="ds-grupo">
+          <p class="ds-h3">O que aprendi · próximos passos</p>
+          <ul class="lista-marcador" role="list">
+            <li>GROUP BY esmaga as linhas; window function calcula por grupo e mantém cada linha na tela.</li>
+            <li>WHERE filtra as linhas antes do GROUP BY; HAVING filtra os grupos depois.</li>
+          </ul>
+          <ul class="lista-marcador lista-marcador--apagado" role="list">
+            <li>Campo status de candidatura: quero aplicar, aplicado, entrevista.</li>
+          </ul>
+          </div>
+          <pre class="codigo"><code>LAG(faturamento_atual)
+  OVER (ORDER BY ano, mes)
+  AS faturamento_anterior</code></pre>
+        </div>
+        <dl class="lateral">
+          <div class="lateral__item"><dt class="lateral__rotulo">período</dt><dd class="lateral__valor">jun/2026</dd></div>
+          <div class="lateral__item">
+            <dt class="lateral__rotulo">stack</dt>
+            <dd class="lateral__valor">
+              <ul class="lateral__lista" role="list"><li>PostgreSQL 15+</li><li>Docker Compose</li><li>PgAdmin 4</li><li>SQL: CTEs, window functions</li></ul>
+            </dd>
+          </div>
+          <div class="lateral__item">
+            <dt class="lateral__rotulo">código no GitHub</dt>
+            <dd class="lateral__valor">
+              <a class="ds-link-externo" href="https://github.com/SamuelzinPires/northwind-sql-analytics" target="_blank" rel="noopener noreferrer">
+                northwind-sql-analytics
+                <svg class="icone" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+                <span class="sr-only">(abre em nova aba)</span>
+              </a>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <p class="rotulo-comentario" style="padding-top: var(--esp-6)">// linha do tempo · ordem cronológica (vertical abaixo de 768 px)</p>
+      <ol class="vizinhos" role="list">
+        <li class="vizinho vizinho--contexto"><span class="vizinho__rotulo">006 · jul–ago/2026</span><a class="vizinho__nome" href="#t-lista">CRUD API Data Application</a></li>
+        <li class="vizinho vizinho--anterior"><span class="vizinho__rotulo">← anterior · ago/2026</span><a class="vizinho__nome" href="#t-lista">007 · Data Quality Engineering</a></li>
+        <li class="vizinho vizinho--aqui"><span class="vizinho__rotulo">você está aqui · ago/2026</span><span class="vizinho__nome" aria-current="page">008 · Airflow ETL Orchestration</span></li>
+        <li class="vizinho vizinho--progresso"><span class="vizinho__rotulo">próximo</span><span class="vizinho__nome">em progresso</span></li>
+      </ol>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-dados">
+      <h2 id="t-dados"><span class="ds-num">11</span> dados</h2>
+      <p class="ds-h3">barras · 15/09/2026, % renovável</p>
+      <ul class="barras" role="list">
+        {
+          renovavel.map((r) => (
+            <li class="barra-dado">
+              <span class="barra-dado__rotulo">{r.nome}</span>
+              <span class="barra-dado__trilho"><span class="barra-dado__valor" style={`--valor: ${r.valor}`} /></span>
+              <span class="barra-dado__numero">{r.valor.toLocaleString('pt-BR')}%</span>
+            </li>
+          ))
+        }
+        <li class="barra-dado barra-dado--total">
+          <span class="barra-dado__rotulo">Brasil (SIN)</span>
+          <span class="barra-dado__trilho"><span class="barra-dado__valor" style="--valor: 86.89" /></span>
+          <span class="barra-dado__numero">86,89%</span>
+        </li>
+      </ul>
+      <p class="ds-h3">barras de falha · parte das 541.909 linhas</p>
+      <ul class="barras" role="list" style="--barra-rotulo: 15rem; --barra-trilho: 22rem">
+        <li class="barra-dado barra-dado--falha"><span class="barra-dado__rotulo">CustomerID não nulo</span><span class="barra-dado__trilho barra-dado__trilho--fundo"><span class="barra-dado__valor" style="--valor: 24.93" /></span><span class="barra-dado__numero">135.080</span></li>
+        <li class="barra-dado barra-dado--falha"><span class="barra-dado__rotulo">Quantity ≥ 0</span><span class="barra-dado__trilho barra-dado__trilho--fundo"><span class="barra-dado__valor" style="--valor: 1.96" /></span><span class="barra-dado__numero">10.624</span></li>
+      </ul>
+      <p class="ds-h3">quadrados de status · as 13 execuções do CI</p>
+      <ol class="faixa-status" role="list">
+        {
+          ci.map(([hora, estado], i) => (
+            <li>
+              <span class:list={['quadrado-status', estado === 'falha' && 'quadrado-status--falha', i === 8 && 'quadrado-status--selecionado']} />
+              <span>{hora}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <ul class="legenda" role="list">
+        <li><span class="quadrado-status" />passou</li>
+        <li><span class="quadrado-status quadrado-status--falha" />falhou</li>
+        <li><span class="quadrado-status quadrado-status--selecionado" />item aberto</li>
+      </ul>
+      <p class="ds-h3">método HTTP</p>
+      <ul class="ds-metodos" role="list">
+        {endpoints.map((e) => <li><span class:list={['metodo', `metodo--${e.metodo}`]}>{e.metodo.toUpperCase()}</span> {e.rota}</li>)}
+      </ul>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-lista">
+      <h2 id="t-lista"><span class="ds-num">12</span> lista de projetos</h2>
+      <p class="ds-apagado">Linhas empilhadas até 1023 px; tabela de 7 colunas a partir de 1024. A linha inteira é o link; passe o cursor ou use Tab.</p>
+      <div class="ds-lista-topo">
+        <span class="contador">3 registros · mais recente primeiro</span>
+        <nav class="alternador" aria-label="Visão da lista">
+          <a class="alternador__opcao" href="#t-lista">mapa</a>
+          <a class="alternador__opcao" href="#t-lista" aria-current="page">lista</a>
+        </nav>
+      </div>
+      <div>
+        <div class="lista-projetos__cabeca" aria-hidden="true">
+          <span>#</span><span>projeto</span><span>tipo</span><span>período</span><span>stack</span><span>destaque</span><span style="text-align: right">ação</span>
+        </div>
+        <ol class="lista-projetos" role="list" style="border-top: 0">
+          {
+            linhas.map((l) => (
+              <li>
+                <a class="lista-projetos__linha" href="#t-lista">
+                  <span class="lista-projetos__num">{l.num}</span>
+                  <span class="lista-projetos__nome">
+                    <svg class:list={['estrela', !l.estrela && 'estrela--vazia']} viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z" fill="currentColor" /></svg>
+                    {l.nome}
+                    {l.estrela && <span class="sr-only">(em destaque)</span>}
+                  </span>
+                  <span class="lista-projetos__tipo">{l.tipo}</span>
+                  <span class:list={['lista-projetos__periodo', l.andamento && 'lista-projetos__periodo--andamento']}>{l.periodo}</span>
+                  <span class="lista-projetos__stack">{l.stack}</span>
+                  <span class="lista-projetos__destaque">{l.destaque}</span>
+                  <span class="lista-projetos__acao" aria-hidden="true"><span class="lista-projetos__acao-texto">abrir </span>→</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-celular">
+      <h2 id="t-celular"><span class="ds-num">13</span> celular</h2>
+      <p class="ds-apagado">Seletor com botões de 44 px, chips (no máximo 1 fileira) e o painel do ponto tocado no Z3. No site o painel fica fixo no rodapé da tela (classe painel-fixo--fixo).</p>
+      <div class="ds-celular">
+        <div class="seletor">
+          <button class="seletor__botao" type="button" aria-label="Dia anterior">‹</button>
+          <span class="seletor__valor"><span class="seletor__data">15/09/2026</span><span class="seletor__legenda">% renovável da geração</span></span>
+          <button class="seletor__botao" type="button" aria-label="Próximo dia">›</button>
+        </div>
+        <div class="painel-fixo">
+          <div class="painel-fixo__meta">
+            <span>007 · ago/2026 · qualidade</span>
+            <span class="painel-fixo__destaque"><svg class="estrela" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z" fill="currentColor" /></svg>destaque</span>
+          </div>
+          <p class="painel-fixo__titulo">Data Quality Engineering</p>
+          <p>541 mil transações · 6 regras</p>
+          <ul class="chips" role="list"><li>Python</li><li>DuckDB</li><li>Pandera</li></ul>
+          <a class="botao botao--primario botao--bloco" href="#t-lista">abrir projeto →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-contato">
+      <h2 id="t-contato"><span class="ds-num">14</span> contato e certificados</h2>
+      <div class="ds-dupla">
+        <div class="canal canal--ativo">
+          <span class="canal__nome">e-mail</span>
+          <span class="canal__endereco">samuelpires727@gmail.com</span>
+          <div class="canal__acoes">
+            <a class="botao botao--primario" href="#t-contato">escrever →</a>
+            <button class="botao botao--secundario" type="button">copiar</button>
+          </div>
+        </div>
+        <a class="canal" href="https://github.com/SamuelzinPires" target="_blank" rel="noopener noreferrer">
+          <span class="canal__topo">
+            <span class="canal__nome">GitHub</span>
+            <span class="canal__abrir">abrir <svg class="icone" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
+          </span>
+          <span class="canal__endereco">/SamuelzinPires</span>
+          <span class="sr-only">(abre em nova aba)</span>
+        </a>
+      </div>
+      <div class="ds-dupla">
+        <div class="ds-raia">
+          <p class="raia-titulo">01 · LINGUAGEM<small>Python</small></p>
+          <div class="no-certificado"><span class="no-certificado__meta">DataCamp · 04/08</span><span class="no-certificado__titulo">Introduction to Python for Developers</span></div>
+        </div>
+        <ol class="trilha" role="list">
+          <li class="trilha-item"><span class="trilha-item__data">11/08</span><span class="trilha-item__corpo"><span class="trilha-item__titulo">Introduction to Importing Data in Python</span><span class="trilha-item__emissor">DataCamp</span></span></li>
+          <li class="trilha-item"><span class="trilha-item__data">20/08</span><span class="trilha-item__corpo"><span class="trilha-item__titulo">Intermediate Importing Data in Python</span><span class="trilha-item__emissor">DataCamp</span></span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-a2">
+      <h2 id="t-a2"><span class="ds-num">15</span> A2 (home)</h2>
+      <div class="ds-dupla ds-dupla--a2">
+        <div class="ds-a2-texto">
+          <ol class="log" role="list">
+            <li><span class="log__hora">00:00:01</span><span class="log__nivel">INFO</span><span>extract</span><span class="log__msg">buscando dados na fonte</span></li>
+            <li><span class="log__hora">00:00:02</span><span class="log__nivel">INFO</span><span>transform</span><span class="log__msg">limpando e padronizando</span></li>
+            <li><span class="log__hora">00:00:03</span><span class="log__nivel">INFO</span><span>audit</span><span class="log__msg">validando a qualidade</span></li>
+            <li><span class="log__hora">00:00:04</span><span class="log__nivel log__nivel--ok">OK</span><span>load</span><span class="log__msg">carga concluída, sem duplicar</span></li>
+          </ol>
+          <p class="hero-nome">Samuel Pires de Miranda<span class="hero-nome__cursor" aria-hidden="true" /></p>
+          <p class="cargo">&gt; Engenheiro de Dados Júnior</p>
+          <p>Construo pipelines de dados de ponta a ponta: da extração à carga, com qualidade e orquestração.</p>
+          <div class="acoes">
+            <a class="botao botao--primario" href="#t-lista">[ ver projetos ]</a>
+            <a class="botao botao--secundario" href="#t-contato">[ contato ]</a>
+          </div>
+        </div>
+        <div class="malha" aria-hidden="true" />
       </div>
     </section>
   </main>
 </Base>
 
 <style>
-  .topo {
+  .ds-topo {
     padding-block: var(--esp-secao) var(--esp-7);
     display: grid;
-    gap: var(--esp-3);
+    gap: var(--esp-4);
   }
 
-  .topo h1 {
-    font-size: var(--texto-3xl);
-  }
-
-  .rotulo {
-    color: var(--cor-azul-claro);
-    font-size: var(--texto-sm);
-  }
-
-  .apagado {
-    color: var(--cor-apagado);
-  }
-
-  .verde {
-    color: var(--cor-verde);
-  }
-
-  .ambar {
-    color: var(--cor-ambar);
-  }
-
-  .azul {
-    color: var(--cor-azul-claro);
-  }
-
-  code {
+  .ds-codigo-inline {
     font-family: inherit;
     color: var(--cor-texto);
     background: var(--cor-painel);
@@ -296,100 +609,115 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
     border-radius: var(--raio-1);
   }
 
-  .meta {
-    font-size: var(--texto-xs);
-  }
-
-  .largura {
-    font-size: var(--texto-sm);
+  .ds-apagado {
     color: var(--cor-apagado);
   }
 
-  .bp {
+  .ds-meta {
+    font-size: var(--texto-micro);
+  }
+
+  .ds-largura {
+    font-size: var(--texto-rotulo);
+    color: var(--cor-apagado);
+  }
+
+  .ds-bp {
     display: none;
     margin-left: 1ch;
     color: var(--cor-verde);
   }
 
-  .bp-celular {
+  .ds-bp-celular {
     display: inline;
   }
 
   @media (min-width: 768px) {
-    .bp-celular {
+    .ds-bp-celular {
       display: none;
     }
 
-    .bp-tablet {
+    .ds-bp-tablet {
+      display: inline;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .ds-bp-tablet {
+      display: none;
+    }
+
+    .ds-bp-notebook {
       display: inline;
     }
   }
 
   @media (min-width: 1440px) {
-    .bp-tablet {
+    .ds-bp-notebook {
       display: none;
     }
 
-    .bp-desktop {
+    .ds-bp-desktop {
       display: inline;
     }
   }
 
-  section {
+  .ds-secao {
     padding-block: var(--esp-7);
     border-top: var(--borda);
     display: grid;
-    gap: var(--esp-4);
+    gap: var(--esp-5);
   }
 
-  section:last-of-type {
+  .ds-secao:last-of-type {
     padding-bottom: var(--esp-secao);
   }
 
-  h2 {
-    font-size: var(--texto-xl);
-  }
-
-  .num {
+  .ds-num {
     color: var(--cor-apagado);
     font-weight: var(--peso-normal);
     margin-right: var(--esp-2);
   }
 
-  .sub {
-    margin-top: var(--esp-4);
-    font-size: var(--texto-sm);
+  .ds-sub,
+  .ds-h3 {
+    font-size: var(--texto-rotulo);
     font-weight: var(--peso-medio);
     letter-spacing: var(--tracking-rotulo);
     text-transform: uppercase;
     color: var(--cor-apagado);
   }
 
-  ul[role='list'] {
+  .ds-sub {
+    margin-top: var(--esp-4);
+  }
+
+  ul[role='list'],
+  ol[role='list'] {
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
   /* cores */
-  .cores {
+  .ds-cores {
     display: grid;
     gap: var(--esp-3);
   }
 
   @media (min-width: 768px) {
-    .cores {
+    .ds-cores {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media (min-width: 1440px) {
-    .cores {
+    .ds-cores {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
-  .cor {
+  .ds-cor {
     display: flex;
     gap: var(--esp-4);
     align-items: flex-start;
@@ -397,10 +725,10 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
     background: var(--cor-painel);
     border: var(--borda);
     border-radius: var(--raio-3);
-    font-size: var(--texto-sm);
+    font-size: var(--texto-rotulo);
   }
 
-  .amostra {
+  .ds-amostra {
     flex: none;
     width: 3rem;
     height: 3rem;
@@ -408,155 +736,185 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
     border: var(--borda);
   }
 
-  .cor-nome {
+  .ds-amostra--pequena {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .ds-cor-nome {
     font-weight: var(--peso-medio);
   }
 
-  .contraste {
+  .ds-contraste {
     display: flex;
     flex-wrap: wrap;
     gap: var(--esp-1) var(--esp-3);
     margin-top: var(--esp-2);
-    font-size: var(--texto-xs);
+    font-size: var(--texto-micro);
   }
 
-  .selo {
+  .ds-selo {
     padding-inline: var(--esp-2);
     border-radius: var(--raio-1);
     border: 1px solid currentColor;
+    font-size: var(--texto-micro);
   }
 
-  .selo--ok {
+  .ds-selo--ok {
     color: var(--cor-verde);
   }
 
-  .selo--aviso {
+  .ds-selo--aviso {
     color: var(--cor-ambar);
   }
 
-  .prox {
+  .ds-papeis {
+    display: grid;
+    gap: var(--esp-2) var(--esp-6);
+    font-size: var(--texto-rotulo);
+  }
+
+  @media (min-width: 768px) {
+    .ds-papeis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .ds-papeis {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .ds-papeis li,
+  .ds-pares li {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-2);
+  }
+
+  .ds-pares {
+    display: grid;
+    gap: var(--esp-3);
+    font-size: var(--texto-rotulo);
+  }
+
+  .ds-pares li {
+    flex-wrap: wrap;
+  }
+
+  .ds-par {
+    padding: var(--esp-1) var(--esp-3);
+    border-radius: var(--raio-2);
+    font-weight: var(--peso-forte);
+  }
+
+  .ds-prox {
     display: flex;
     flex-wrap: wrap;
     gap: var(--esp-6);
   }
 
-  .prox li {
+  .ds-prox li {
     display: flex;
     align-items: center;
     gap: var(--esp-2);
-    font-size: var(--texto-sm);
+    font-size: var(--texto-rotulo);
   }
 
-  .ponto {
+  .ds-ponto {
     display: inline-block;
     border-radius: var(--raio-ponto);
   }
 
-  .ponto--centro {
+  .ds-ponto--centro {
     width: 12px;
     height: 12px;
     border: 2px solid var(--cor-prox-centro);
   }
 
   /* tipografia */
-  .escala {
+  .ds-escala {
     display: grid;
     gap: var(--esp-5);
   }
 
-  .escala p:last-child {
+  .ds-escala p:last-child {
     overflow-wrap: anywhere;
   }
 
-  .inline {
+  .ds-inline {
     display: inline-block;
-    margin-left: 0.5ch;
     vertical-align: -0.1em;
+    margin-left: 0.5ch;
     color: var(--cor-texto);
   }
 
-  .log {
-    padding: var(--esp-4) var(--esp-5);
-    background: var(--cor-painel);
-    border: var(--borda);
-    border-radius: var(--raio-3);
-    font-size: var(--texto-sm);
-  }
-
   /* espaçamento */
-  .espacos {
+  .ds-espacos {
     display: grid;
     gap: var(--esp-2);
   }
 
-  .espacos li {
+  .ds-espacos li {
     display: grid;
-    grid-template-columns: 7rem 1fr;
+    grid-template-columns: 9rem 1fr;
     align-items: center;
   }
 
-  .barra {
+  .ds-barra-esp {
     display: block;
     height: 0.75rem;
     background: var(--cor-azul);
     border-radius: var(--raio-1);
   }
 
-  .barra--fluida {
+  .ds-barra-esp--fluida {
     background: var(--cor-verde);
   }
 
+  .ds-barra-esp--toque {
+    background: transparent;
+    border: 1px dashed var(--cor-azul-claro);
+  }
+
   /* grade */
-  .demo-grade {
+  .ds-demo-grade {
     min-height: 6rem;
   }
 
-  .coluna {
+  .ds-coluna {
     display: grid;
     place-items: end center;
     padding-bottom: var(--esp-1);
     background: color-mix(in srgb, var(--cor-azul) 22%, transparent);
     border: 1px solid color-mix(in srgb, var(--cor-azul) 60%, transparent);
-    font-size: var(--texto-xs);
+    font-size: var(--texto-micro);
     color: var(--cor-apagado);
   }
 
-  .bloco {
+  .ds-bloco {
     padding: var(--esp-4);
     background: var(--cor-painel);
     border: var(--borda);
     border-radius: var(--raio-2);
-    font-size: var(--texto-sm);
-    grid-column: span 12;
-  }
-
-  @media (min-width: 768px) {
-    .span-a {
-      grid-column: span 6;
-    }
-  }
-
-  @media (min-width: 1440px) {
-    .span-a,
-    .span-b {
-      grid-column: span 4;
-    }
+    font-size: var(--texto-rotulo);
   }
 
   /* raios */
-  .raios {
+  .ds-raios {
     display: flex;
     flex-wrap: wrap;
     gap: var(--esp-5);
   }
 
-  .raios li {
+  .ds-raios li {
     display: grid;
     gap: var(--esp-2);
     justify-items: start;
   }
 
-  .caixa {
+  .ds-caixa {
     width: 4rem;
     height: 3rem;
     background: var(--cor-painel);
@@ -564,12 +922,12 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
   }
 
   /* movimento */
-  .movs {
+  .ds-movs {
     display: grid;
     gap: var(--esp-4);
   }
 
-  .trilho {
+  .ds-trilho {
     position: relative;
     display: block;
     height: 12px;
@@ -577,7 +935,7 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
     border-bottom: 1px dashed var(--cor-linha);
   }
 
-  .bolinha {
+  .ds-bolinha {
     position: absolute;
     top: 2px;
     left: 0;
@@ -585,33 +943,90 @@ const duracao = (token: string) => tokensCss.match(new RegExp(`--${token}:\\s*(\
     height: 8px;
     border-radius: var(--raio-ponto);
     background: var(--cor-verde);
-    animation-name: atravessar;
+    animation-name: ds-atravessar;
     animation-iteration-count: infinite;
     animation-direction: alternate;
   }
 
-  @keyframes atravessar {
+  @keyframes ds-atravessar {
     to {
       left: calc(100% - 8px);
     }
   }
 
   /* componentes */
-  .linha-comp {
+  .ds-linha-comp {
     display: flex;
     flex-wrap: wrap;
     gap: var(--esp-3);
   }
 
-  .link-externo {
+  .ds-link-externo {
     display: inline-flex;
     align-items: center;
     gap: var(--esp-1);
   }
 
-  .foco-exemplo {
+  .ds-foco-exemplo {
     outline: 2px solid var(--cor-foco);
     outline-offset: 3px;
     cursor: default;
+  }
+
+  .ds-moldura {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ds-metodos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-2) var(--esp-6);
+    font-size: var(--texto-nav);
+  }
+
+  .ds-lista-topo {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--esp-3);
+  }
+
+  .ds-celular {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-6);
+    max-width: 390px;
+  }
+
+  .ds-dupla {
+    display: grid;
+    gap: var(--esp-6);
+    align-items: start;
+  }
+
+  @media (min-width: 768px) {
+    .ds-dupla {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .ds-raia {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-4);
+  }
+
+  .ds-a2-texto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-5);
+  }
+
+  .ds-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-5);
   }
 </style>
