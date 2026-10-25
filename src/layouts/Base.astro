@@ -1,6 +1,9 @@
 ---
-// Layout comum: fonte hospedada no próprio site, tokens e estilos base.
+// Layout comum: fonte hospedada no próprio site, tokens e estilos base, navegação com View Transitions
+// (ClientRouter do Astro), rolagem suave e cursor. Sem JavaScript o site é HTML comum, sem nada quebrado.
+import { ClientRouter } from 'astro:transitions';
 import '@fontsource-variable/jetbrains-mono';
+import 'lenis/dist/lenis.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/componentes.css';
@@ -26,9 +29,18 @@ const { titulo, descricao, noindex = false } = Astro.props;
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#0D1117" />
     <link rel="preload" href={fonteLatina} as="font" type="font/woff2" crossorigin />
+    <ClientRouter />
   </head>
   <body>
     <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
     <slot />
+    <!-- Cursor personalizado: persiste entre páginas para não "pular" na navegação -->
+    <div id="cursor" class="cursor" aria-hidden="true" transition:persist="cursor">
+      <span class="cursor__anel"></span>
+    </div>
+    <div id="cursor-ponto" class="cursor__ponto" aria-hidden="true" transition:persist="cursor-ponto"></div>
+    <script>
+      import '../scripts/movimento';
+    </script>
   </body>
 </html>
