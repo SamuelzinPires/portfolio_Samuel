@@ -1,0 +1,95 @@
+---
+// Esqueleto da página de projeto: título, resumo, ficha lateral e o corpo em Markdown, só com o que existe.
+// O molde "estudo de caso" completo (números, peça-assinatura, decisões…) é a Parte 5.
+import { render } from 'astro:content';
+import Icone from '../../components/Icone.astro';
+import TextoSeta from '../../components/TextoSeta.astro';
+import Pagina from '../../layouts/Pagina.astro';
+import { periodo } from '../../lib/datas';
+import { carregarProjetos, type Projeto } from '../../lib/projetos';
+
+export async function getStaticPaths() {
+  const projetos = await carregarProjetos();
+  return projetos.map((projeto) => ({ params: { slug: projeto.id }, props: { projeto } }));
+}
+
+interface Props {
+  projeto: Projeto;
+}
+
+const { projeto } = Astro.props;
+const { numero, data: d } = projeto;
+const emAndamento = !d.fim;
+const temCorpo = Boolean(projeto.body?.trim());
+const Corpo = temCorpo ? (await render(projeto)).Content : null;
+const nomeRepo = (url: string) => new URL(url).pathname.split('/').filter(Boolean).pop() ?? url;
+---
+
+<Pagina titulo={`${d.titulo} — Samuel Pires de Miranda`} descricao={d.resumo}>
+  <p class="migalha migalha--pagina">
+    <a href="/projetos"><Icone nome="seta" class="icone--texto icone--esquerda" /> projetos</a>
+    <span>/ {numero} · {d.tipo}</span>
+    {
+      emAndamento ? (
+        <span class="migalha__estado--andamento">em andamento</span>
+      ) : (
+        <span>· <TextoSeta texto={periodo(d.inicio, d.fim)} /></span>
+      )
+    }
+  </p>
+
+  <div class="hero-projeto">
+    <div class="hero-projeto__texto">
+      <h1 class="titulo-pagina">{d.titulo}</h1>
+      <p class="lead">{d.resumo}</p>
+    </div>
+  </div>
+
+  <div class="colunas-projeto">
+    <div class="colunas-projeto__principal">
+      {Corpo && <div class="texto-corrido"><Corpo /></div>}
+    </div>
+    <dl class="lateral">
+      <div class="lateral__item">
+        <dt class="lateral__rotulo">período</dt>
+        <dd class="lateral__valor"><TextoSeta texto={periodo(d.inicio, d.fim)} /></dd>
+      </div>
+      <div class="lateral__item">
+        <dt class="lateral__rotulo">stack</dt>
+        <dd class="lateral__valor">
+          <ul class="lateral__lista" role="list">
+            {d.stack.map((tecnologia) => <li>{tecnologia}</li>)}
+          </ul>
+        </dd>
+      </div>
+      {
+        d.repo && (
+          <div class="lateral__item">
+            <dt class="lateral__rotulo">código no GitHub</dt>
+            <dd class="lateral__valor">
+              <a class="link-externo" href={d.repo} target="_blank" rel="noopener noreferrer">
+                {nomeRepo(d.repo)}
+                <Icone nome="externo" />
+                <span class="sr-only">(abre em nova aba)</span>
+              </a>
+            </dd>
+          </div>
+        )
+      }
+      {
+        d.demo && (
+          <div class="lateral__item">
+            <dt class="lateral__rotulo">ao vivo</dt>
+            <dd class="lateral__valor">
+              <a class="link-externo" href={d.demo} target="_blank" rel="noopener noreferrer">
+                ver demonstração
+                <Icone nome="externo" />
+                <span class="sr-only">(abre em nova aba)</span>
+              </a>
+            </dd>
+          </div>
+        )
+      }
+    </dl>
+  </div>
+</Pagina>

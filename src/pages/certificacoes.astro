@@ -1,0 +1,54 @@
+---
+// Certificações: lista cronológica lida da collection. Sem PDF (não são hospedados nem abertos).
+// As raias por trilha (Linguagem · Dados · Conceitos) são a Parte 6.
+import { getCollection } from 'astro:content';
+import Pagina from '../layouts/Pagina.astro';
+import { diaMes, isoDia } from '../lib/datas';
+
+const trilhas = { linguagem: 'Linguagem', dados: 'Dados', conceitos: 'Conceitos' } as const;
+const ordemTrilha = Object.keys(trilhas);
+
+// Eixo por data de conclusão. No mesmo dia, a ordem da trilha: Linguagem → Dados → Conceitos.
+const certificados = (await getCollection('certificados'))
+  .map((c) => c.data)
+  .sort(
+    (a, b) =>
+      a.conclusao.getTime() - b.conclusao.getTime() || ordemTrilha.indexOf(a.trilha) - ordemTrilha.indexOf(b.trilha),
+  );
+---
+
+<Pagina
+  titulo="Certificações — Samuel Pires de Miranda"
+  descricao="Certificados de Python, importação de dados, APIs, engenharia de dados e cloud que Samuel Pires de Miranda concluiu na DataCamp em 2026."
+>
+  <header class="cabeca-pagina">
+    <p class="consulta" aria-hidden="true">
+      <span class="consulta__prompt">&gt;</span>
+      <span>SELECT * FROM certificados<span class="consulta__extra"> ORDER BY conclusao</span>;</span>
+    </p>
+    <h1 class="titulo-pagina">certificações</h1>
+  </header>
+
+  <ol class="trilha" role="list">
+    {
+      certificados.map((c) => (
+        <li class="trilha-item">
+          <time class="trilha-item__data" datetime={isoDia(c.conclusao)}>
+            {diaMes(c.conclusao)}
+          </time>
+          <span class="trilha-item__corpo">
+            <span class="trilha-item__titulo">{c.titulo}</span>
+            <span class="trilha-item__emissor">
+              {c.emissor} · {trilhas[c.trilha]}
+            </span>
+            {c.urlVerificacao && (
+              <a href={c.urlVerificacao} target="_blank" rel="noopener noreferrer">
+                verificar<span class="sr-only"> (abre em nova aba)</span>
+              </a>
+            )}
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+</Pagina>

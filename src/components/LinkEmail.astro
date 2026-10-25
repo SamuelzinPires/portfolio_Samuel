@@ -1,0 +1,17 @@
+---
+// Link de e-mail com o endereço escrito em entidades HTML (&#115;&#97;…).
+// O navegador decodifica e o `mailto:` funciona igual, sem JavaScript; mas o endereço
+// não aparece literal no HTML, o que atrapalha robôs simples que coletam e-mail para spam.
+// (Não é criptografia: só reduz o spam. O e-mail continua público de propósito.)
+import { site } from '../data/site';
+import { entidades } from '../lib/entidades';
+
+interface Props {
+  class?: string;
+}
+
+const { class: classe = '' } = Astro.props;
+const abre = `<a href="${entidades(`mailto:${site.email}`)}"${classe ? ` class="${classe}"` : ''}>`;
+---
+
+<Fragment set:html={abre} /><slot><Fragment set:html={entidades(site.email)} /></slot><Fragment set:html="</a>" />

@@ -4,6 +4,27 @@
  * Breakpoints: 768 (tablet) e 1024 (lista em tabela e coluna lateral do projeto).
  */
 
+/* ── Estrutura de página ───────────────────────────────────────────── */
+
+/* Barra em cima, conteúdo no meio (cresce), rodapé embaixo */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.pagina__main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--esp-8); /* respiro entre o conteúdo e a linha do rodapé */
+}
+
+/* a home cuida do próprio espaço (o hero centraliza no meio da tela) */
+.pagina__main:has(> .hero-a2) {
+  padding-bottom: 0;
+}
+
 /* ── Navegação ─────────────────────────────────────────────────────── */
 
 .barra {
@@ -14,8 +35,11 @@
 }
 
 .barra__prompt {
+  align-self: flex-start;
+  padding-block: var(--esp-1);
   font-size: var(--texto-rotulo);
   color: var(--cor-apagado);
+  text-decoration: none;
 }
 
 .barra__usuario {
@@ -58,6 +82,7 @@
   }
 
   .barra__prompt {
+    align-self: auto;
     font-size: var(--texto-nav);
   }
 
@@ -78,8 +103,24 @@
   text-decoration: none;
 }
 
+/* no topo da página de projeto, afastada da barra */
+.migalha--pagina {
+  padding-top: var(--esp-7);
+}
+
 .migalha__estado--andamento {
   color: var(--cor-ok);
+}
+
+/* A bolinha é desenhada em CSS: o glifo ● também não está na fonte hospedada */
+.migalha__estado--andamento::before {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.6ch;
+  border-radius: var(--raio-ponto);
+  background: currentColor;
 }
 
 .rodape {
@@ -98,6 +139,13 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Link que abre em outra aba: texto + seta ↗ em SVG */
+.link-externo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-1);
 }
 
 .rodape__links a {
@@ -137,6 +185,53 @@
   line-height: var(--entrelinha-texto);
   color: var(--cor-apagado);
   max-width: 40rem;
+}
+
+/* Topo das páginas internas (projetos, certificações, contato): linha de consulta, título, texto */
+.cabeca-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-3);
+  padding-block: var(--esp-6) var(--esp-5);
+}
+
+.cabeca-pagina__lead {
+  display: none; /* só a partir de 768 px: no celular a lista vem logo abaixo do título */
+}
+
+/* "> SELECT * FROM projetos;" */
+.consulta {
+  display: flex;
+  gap: var(--esp-2);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-forte);
+}
+
+.consulta__prompt {
+  color: var(--cor-ok);
+}
+
+.consulta__extra {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .cabeca-pagina {
+    gap: var(--esp-4);
+    padding-block: var(--esp-8) var(--esp-6);
+  }
+
+  .cabeca-pagina__lead {
+    display: block;
+  }
+
+  .consulta {
+    font-size: var(--texto-lead);
+  }
+
+  .consulta__extra {
+    display: inline;
+  }
 }
 
 .hero-projeto {
@@ -800,7 +895,8 @@ a.vizinho__nome:hover {
   .lista-projetos__cabeca,
   .lista-projetos__linha {
     display: grid;
-    grid-template-columns: 4rem minmax(0, 1.85fr) minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.85fr) minmax(0, 1.6fr) 5.5rem;
+    /* proporções do desenho (1440): projeto 306 · tipo 150 · período 160 · stack 314 · destaque 228 */
+    grid-template-columns: 3rem minmax(0, 2fr) minmax(0, 0.95fr) minmax(0, 1fr) minmax(0, 2.1fr) minmax(0, 1.5fr) 5rem;
     grid-template-areas: 'num nome tipo periodo stack destaque acao';
     align-items: center;
     gap: var(--esp-4);
@@ -851,6 +947,46 @@ a.vizinho__nome:hover {
   .estrela--vazia {
     display: block;
     visibility: hidden;
+  }
+}
+
+/* Contador do topo (celular) e rodapé da lista (desktop, com a legenda da estrela) */
+.contador--topo {
+  padding-bottom: var(--esp-4);
+}
+
+.lista-projetos-rodape {
+  display: none;
+}
+
+.legenda-estrela {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-apagado);
+}
+
+.legenda-estrela .estrela {
+  width: 12px;
+  height: 12px;
+}
+
+@media (min-width: 1024px) {
+  .contador--topo {
+    display: none;
+  }
+
+  .lista-projetos-rodape {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--esp-4);
+  }
+
+  /* o cabeçalho de colunas já tem a linha de baixo */
+  .lista-projetos {
+    border-top: 0;
   }
 }
 
@@ -984,6 +1120,13 @@ a.vizinho__nome:hover {
 }
 
 /* ── Contato e certificados ────────────────────────────────────────── */
+
+/* Canais empilhados (página de contato; o K3 em DAG é a Parte 6) */
+.canais {
+  display: grid;
+  gap: var(--esp-4);
+  max-width: 36rem;
+}
 
 .canal {
   display: flex;
@@ -1145,7 +1288,7 @@ a.canal:hover,
 
 .log li {
   display: grid;
-  grid-template-columns: 8ch 4ch 9ch minmax(0, 1fr);
+  grid-template-columns: 8ch 4ch 10ch minmax(0, 1fr);
   gap: var(--esp-2);
 }
 
@@ -1163,9 +1306,50 @@ a.canal:hover,
   color: var(--cor-ok);
 }
 
+.log__nivel--erro {
+  color: var(--cor-falha);
+}
+
 @media (min-width: 768px) {
   .log {
     font-size: var(--texto-rotulo);
+  }
+}
+
+/* Hero da home: texto + malha. Empilhado até 1023 px; duas colunas a partir de 1024. */
+.hero-a2 {
+  flex: 1 1 auto;
+  display: grid;
+  align-content: start;
+  gap: var(--esp-7);
+  padding-block: var(--esp-7);
+}
+
+.hero-a2__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-5);
+}
+
+.hero-a2__resumo {
+  max-width: 50ch;
+}
+
+.hero-a2 .hero-nome {
+  max-width: 14ch;
+}
+
+@media (min-width: 1024px) {
+  .hero-a2 {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-content: center;
+    align-items: center;
+    gap: var(--gap-colunas);
+  }
+
+  .hero-a2 .malha {
+    align-self: stretch;
+    min-height: 28rem;
   }
 }
 
@@ -1199,10 +1383,22 @@ a.canal:hover,
 
 /* Malha estática em CSS (V1; o WebGL da V2 entra por cima). Pontos cinza, azuis perto do centro, verdes no meio. */
 .malha {
+  --malha-passo: 20px;
+  --malha-raio-azul: 5.5rem;
+  --malha-raio-verde: 2.25rem;
   position: relative;
   min-height: 13.75rem;
   background-image: radial-gradient(var(--cor-linha) 1.3px, transparent 1.6px);
-  background-size: 20px 20px;
+  background-size: var(--malha-passo) var(--malha-passo);
+}
+
+/* No desktop a malha ocupa meia tela (print A2): passo e raios maiores */
+@media (min-width: 1024px) {
+  .malha {
+    --malha-passo: 26px;
+    --malha-raio-azul: 9.5rem;
+    --malha-raio-verde: 4.5rem;
+  }
 }
 
 .malha::before,
@@ -1210,19 +1406,133 @@ a.canal:hover,
   content: '';
   position: absolute;
   inset: 0;
-  background-size: 20px 20px;
+  background-size: var(--malha-passo) var(--malha-passo);
   -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 var(--raio-mascara), transparent calc(var(--raio-mascara) + 1px));
   mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 var(--raio-mascara), transparent calc(var(--raio-mascara) + 1px));
 }
 
 .malha::before {
-  --raio-mascara: 5.5rem;
+  --raio-mascara: var(--malha-raio-azul);
   background-image: radial-gradient(var(--cor-azul-claro) 1.8px, transparent 2.1px);
 }
 
 .malha::after {
-  --raio-mascara: 2.25rem;
+  --raio-mascara: var(--malha-raio-verde);
   background-image: radial-gradient(var(--cor-verde) 2.2px, transparent 2.5px);
   background-color: var(--cor-fundo);
   background-blend-mode: normal;
+}
+
+/* ── Cursor personalizado ──────────────────────────────────────────── */
+/* Os dois elementos ficam no layout (Base.astro); src/scripts/cursor.ts os move e só liga
+   com mouse (pointer: fine) e sem "reduzir movimento". Sem JavaScript, ficam invisíveis. */
+
+.cursor,
+.cursor__ponto {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--camada-cursor);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-media) var(--ease-padrao);
+}
+
+.cursor--visivel {
+  opacity: 1;
+}
+
+/* anel: segue o mouse com atraso (lerp) */
+.cursor__anel {
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--cor-texto);
+  border-radius: var(--raio-ponto);
+  transition:
+    transform var(--dur-media) var(--ease-padrao),
+    background-color var(--dur-media) var(--ease-padrao),
+    border-color var(--dur-media) var(--ease-padrao);
+}
+
+/* ponto: cola no mouse, sem atraso (precisão) */
+.cursor__ponto::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: var(--raio-ponto);
+  background: var(--cor-texto);
+  transition: transform var(--dur-media) var(--ease-padrao);
+}
+
+/* estado "link": o anel cresce e ganha preenchimento azul; o ponto some no anel */
+.cursor--link .cursor__anel {
+  transform: scale(1.9);
+  border-color: var(--cor-azul-claro);
+  background: color-mix(in srgb, var(--cor-azul-claro) 20%, transparent);
+}
+
+.cursor--link.cursor__ponto::before {
+  transform: scale(0);
+}
+
+/* o cursor do sistema só some depois que o script liga o cursor próprio */
+html.cursor-ativo,
+html.cursor-ativo * {
+  cursor: none;
+}
+
+/* ── Transição entre páginas (View Transitions) ────────────────────── */
+/* A barra tem nome próprio: não pisca, só troca o item atual. O conteúdo faz um fade curto.
+   Escrito em CSS (e não com as diretivas do Astro, que geram <style> inline): fica compatível com
+   uma política de segurança que só aceita estilo do próprio site, e usa os tokens de duração. */
+
+.barra {
+  view-transition-name: barra;
+}
+
+.pagina__main {
+  view-transition-name: conteudo;
+}
+
+@keyframes pagina-sai {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pagina-entra {
+  from {
+    opacity: 0;
+  }
+}
+
+::view-transition-old(conteudo) {
+  animation: pagina-sai var(--dur-media) var(--ease-padrao) both;
+}
+
+::view-transition-new(conteudo) {
+  animation: pagina-entra var(--dur-media) var(--ease-padrao) both;
+}
+
+/* a barra não anima: o antigo e o novo ficam parados no mesmo lugar */
+::view-transition-old(barra),
+::view-transition-new(barra) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

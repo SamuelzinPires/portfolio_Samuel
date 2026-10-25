@@ -1,0 +1,23 @@
+---
+// Layout das páginas do site: barra em cima, conteúdo no meio, rodapé embaixo.
+// (A /design usa o Base direto: tem estrutura própria.)
+import Barra from '../components/Barra.astro';
+import Rodape from '../components/Rodape.astro';
+import Base from './Base.astro';
+
+interface Props {
+  titulo: string;
+  descricao: string;
+  noindex?: boolean;
+}
+---
+
+<Base {...Astro.props}>
+  <div class="pagina">
+    <div class="container"><Barra /></div>
+    <main id="conteudo" class="pagina__main container">
+      <slot />
+    </main>
+    <div class="container"><Rodape /></div>
+  </div>
+</Base>

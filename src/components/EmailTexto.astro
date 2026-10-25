@@ -1,0 +1,7 @@
+---
+// O endereço de e-mail como texto (sem link), também em entidades HTML.
+import { site } from '../data/site';
+import { entidades } from '../lib/entidades';
+---
+
+<Fragment set:html={entidades(site.email)} />

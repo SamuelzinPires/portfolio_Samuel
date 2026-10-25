@@ -2,6 +2,9 @@
 // Página interna de conferência do sistema de design (não indexada).
 // Cores e escala de tipo são lidas do próprio tokens.css: não há valor repetido aqui.
 // A galeria (08–15) usa as classes de src/styles/componentes.css com conteúdo real dos projetos.
+import EmailTexto from '../components/EmailTexto.astro';
+import Icone from '../components/Icone.astro';
+import TextoSeta from '../components/TextoSeta.astro';
 import Base from '../layouts/Base.astro';
 import tokensCss from '../styles/tokens.css?raw';
 
@@ -304,7 +307,7 @@ const linhas = [
       <p>Link interno: <a href="/">página inicial</a></p>
       <p>
         Link externo:{' '}
-        <a class="ds-link-externo" href="https://github.com/SamuelzinPires" target="_blank" rel="noopener noreferrer">
+        <a class="link-externo" href="https://github.com/SamuelzinPires" target="_blank" rel="noopener noreferrer">
           github.com/SamuelzinPires
           <svg class="icone" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
           <span class="sr-only">(abre em nova aba)</span>
@@ -331,7 +334,7 @@ const linhas = [
           </nav>
         </header>
         <p class="migalha" style="padding-top: var(--esp-7)">
-          <a href="#t-lista">← projetos</a><span>/ 008 · orquestração</span><span class="migalha__estado--andamento">● em andamento</span>
+          <a href="#t-lista"><Icone nome="seta" class="icone--texto icone--esquerda" /> projetos</a><span>/ 008 · orquestração</span><span class="migalha__estado--andamento">em andamento</span>
         </p>
         <footer class="rodape" style="margin-top: var(--esp-7)">
           <span>Goiânia, GO · aberto a remoto ou híbrido</span>
@@ -413,7 +416,7 @@ const linhas = [
           <div class="lateral__item">
             <dt class="lateral__rotulo">código no GitHub</dt>
             <dd class="lateral__valor">
-              <a class="ds-link-externo" href="https://github.com/SamuelzinPires/northwind-sql-analytics" target="_blank" rel="noopener noreferrer">
+              <a class="link-externo" href="https://github.com/SamuelzinPires/northwind-sql-analytics" target="_blank" rel="noopener noreferrer">
                 northwind-sql-analytics
                 <svg class="icone" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
                 <span class="sr-only">(abre em nova aba)</span>
@@ -492,7 +495,7 @@ const linhas = [
         <div class="lista-projetos__cabeca" aria-hidden="true">
           <span>#</span><span>projeto</span><span>tipo</span><span>período</span><span>stack</span><span>destaque</span><span style="text-align: right">ação</span>
         </div>
-        <ol class="lista-projetos" role="list" style="border-top: 0">
+        <ol class="lista-projetos" role="list">
           {
             linhas.map((l) => (
               <li>
@@ -504,10 +507,10 @@ const linhas = [
                     {l.estrela && <span class="sr-only">(em destaque)</span>}
                   </span>
                   <span class="lista-projetos__tipo">{l.tipo}</span>
-                  <span class:list={['lista-projetos__periodo', l.andamento && 'lista-projetos__periodo--andamento']}>{l.periodo}</span>
+                  <span class:list={['lista-projetos__periodo', l.andamento && 'lista-projetos__periodo--andamento']}><TextoSeta texto={l.periodo} /></span>
                   <span class="lista-projetos__stack">{l.stack}</span>
                   <span class="lista-projetos__destaque">{l.destaque}</span>
-                  <span class="lista-projetos__acao" aria-hidden="true"><span class="lista-projetos__acao-texto">abrir </span>→</span>
+                  <span class="lista-projetos__acao" aria-hidden="true"><span class="lista-projetos__acao-texto">abrir </span><Icone nome="seta" class="icone--texto" /></span>
                 </a>
               </li>
             ))
@@ -533,7 +536,7 @@ const linhas = [
           <p class="painel-fixo__titulo">Data Quality Engineering</p>
           <p>541 mil transações · 6 regras</p>
           <ul class="chips" role="list"><li>Python</li><li>DuckDB</li><li>Pandera</li></ul>
-          <a class="botao botao--primario botao--bloco" href="#t-lista">abrir projeto →</a>
+          <a class="botao botao--primario botao--bloco" href="#t-lista">abrir projeto<Icone nome="seta" /></a>
         </div>
       </div>
     </section>
@@ -543,9 +546,9 @@ const linhas = [
       <div class="ds-dupla">
         <div class="canal canal--ativo">
           <span class="canal__nome">e-mail</span>
-          <span class="canal__endereco">samuelpires727@gmail.com</span>
+          <span class="canal__endereco"><EmailTexto /></span>
           <div class="canal__acoes">
-            <a class="botao botao--primario" href="#t-contato">escrever →</a>
+            <a class="botao botao--primario" href="#t-contato">escrever<Icone nome="seta" /></a>
             <button class="botao botao--secundario" type="button">copiar</button>
           </div>
         </div>
@@ -572,8 +575,9 @@ const linhas = [
 
     <section class="ds-secao" aria-labelledby="t-a2">
       <h2 id="t-a2"><span class="ds-num">15</span> A2 (home)</h2>
-      <div class="ds-dupla ds-dupla--a2">
-        <div class="ds-a2-texto">
+      <p class="ds-apagado">Hero da home: empilhado até 1023 px (malha embaixo), duas colunas a partir de 1024. A malha é só CSS; o WebGL entra na V2.</p>
+      <div class="hero-a2">
+        <div class="hero-a2__texto">
           <ol class="log" role="list">
             <li><span class="log__hora">00:00:01</span><span class="log__nivel">INFO</span><span>extract</span><span class="log__msg">buscando dados na fonte</span></li>
             <li><span class="log__hora">00:00:02</span><span class="log__nivel">INFO</span><span>transform</span><span class="log__msg">limpando e padronizando</span></li>
@@ -582,7 +586,7 @@ const linhas = [
           </ol>
           <p class="hero-nome">Samuel Pires de Miranda<span class="hero-nome__cursor" aria-hidden="true" /></p>
           <p class="cargo">&gt; Engenheiro de Dados Júnior</p>
-          <p>Construo pipelines de dados de ponta a ponta: da extração à carga, com qualidade e orquestração.</p>
+          <p class="hero-a2__resumo">Construo pipelines de dados de ponta a ponta: da extração à carga, com qualidade e orquestração.</p>
           <div class="acoes">
             <a class="botao botao--primario" href="#t-lista">[ ver projetos ]</a>
             <a class="botao botao--secundario" href="#t-contato">[ contato ]</a>
@@ -590,6 +594,33 @@ const linhas = [
         </div>
         <div class="malha" aria-hidden="true" />
       </div>
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-paginas">
+      <h2 id="t-paginas"><span class="ds-num">16</span> páginas internas e erro</h2>
+      <p class="ds-apagado">Topo de /projetos, /certificações e /contato (o texto de apoio só aparece a partir de 768 px), legenda da lista e o nível de erro do log (404).</p>
+      <header class="cabeca-pagina">
+        <p class="consulta" aria-hidden="true">
+          <span class="consulta__prompt">&gt;</span>
+          <span>SELECT * FROM projetos<span class="consulta__extra"> ORDER BY inicio DESC</span>;</span>
+        </p>
+        <p class="titulo-pagina" role="presentation">projetos</p>
+        <p class="lead cabeca-pagina__lead">Pipelines, APIs e análises de dados que construí em 2026. Cada linha abre o estudo de caso do projeto.</p>
+      </header>
+      <p class="contador contador--topo">3 registros · mais recente primeiro</p>
+      <div class="lista-projetos-rodape ds-rodape-lista">
+        <span class="contador">3 registros</span>
+        <span class="legenda-estrela"><Icone nome="estrela" />= em destaque</span>
+      </div>
+      <p class="ds-apagado">O rodapé da lista (contador + legenda) aparece a partir de 1024 px; abaixo disso o contador sobe para o topo.</p>
+      <ol class="log" role="list">
+        <li><span class="log__hora">00:00:01</span><span class="log__nivel log__nivel--erro">ERRO</span><span>router</span><span class="log__msg">rota não encontrada</span></li>
+      </ol>
+      <p class="ds-apagado">Cursor (só com mouse, sem “reduzir movimento”): anel que segue com atraso e ponto exato; sobre link o anel cresce e fica azul. Na galeria, só a imagem parada.</p>
+      <ul class="ds-cursores" role="list">
+        <li><span class="ds-cursor-demo"><span class="cursor__anel"></span></span>padrão</li>
+        <li class="cursor--link"><span class="ds-cursor-demo"><span class="cursor__anel"></span></span>sobre link</li>
+      </ul>
     </section>
   </main>
 </Base>
@@ -961,12 +992,6 @@ const linhas = [
     gap: var(--esp-3);
   }
 
-  .ds-link-externo {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--esp-1);
-  }
-
   .ds-foco-exemplo {
     outline: 2px solid var(--cor-foco);
     outline-offset: 3px;
@@ -1018,15 +1043,56 @@ const linhas = [
     gap: var(--esp-4);
   }
 
-  .ds-a2-texto {
+  .ds-grupo {
     display: flex;
     flex-direction: column;
     gap: var(--esp-5);
   }
 
-  .ds-grupo {
+  .ds-cursores {
     display: flex;
-    flex-direction: column;
-    gap: var(--esp-5);
+    flex-wrap: wrap;
+    gap: var(--esp-7);
+  }
+
+  .ds-cursores li {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-4);
+    font-size: var(--texto-rotulo);
+  }
+
+  .ds-cursor-demo {
+    position: relative;
+    display: block;
+    width: 56px;
+    height: 56px;
+  }
+
+  .ds-cursor-demo::before {
+    content: '';
+    position: absolute;
+    left: 26px;
+    top: 26px;
+    width: 4px;
+    height: 4px;
+    border-radius: var(--raio-ponto);
+    background: var(--cor-texto);
+  }
+
+  .cursor--link .ds-cursor-demo::before {
+    display: none;
+  }
+
+  .ds-cursor-demo .cursor__anel {
+    left: 14px;
+    top: 14px;
+  }
+
+  /* o rodapé da lista só existe a partir de 1024 px; na galeria fica sempre visível */
+  .ds-rodape-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 </style>

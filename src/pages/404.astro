@@ -1,0 +1,21 @@
+---
+// 404 no estilo da A2: uma linha de log de erro, o código e links de volta. Sem texto sobre o Samuel.
+import Pagina from '../layouts/Pagina.astro';
+---
+
+<Pagina titulo="404 — página não encontrada" descricao="Esta página não existe." noindex>
+  <section class="hero-a2">
+    <div class="hero-a2__texto">
+      <ol class="log" role="list" aria-label="Log de execução">
+        <li><span class="log__hora">00:00:01</span><span class="log__nivel log__nivel--erro">ERRO</span><span>router</span><span class="log__msg">rota não encontrada</span></li>
+      </ol>
+      <h1 class="hero-nome">404<span class="hero-nome__cursor" aria-hidden="true"></span></h1>
+      <p class="cargo"><span aria-hidden="true">&gt; </span>página não encontrada</p>
+      <div class="acoes">
+        <a class="botao botao--primario" href="/"><span aria-hidden="true">[</span>voltar ao início<span aria-hidden="true">]</span></a>
+        <a class="botao botao--secundario" href="/projetos"><span aria-hidden="true">[</span>ver projetos<span aria-hidden="true">]</span></a>
+      </div>
+    </div>
+    <div class="malha" aria-hidden="true"></div>
+  </section>
+</Pagina>

@@ -179,6 +179,16 @@ a:hover {
   flex: none;
 }
 
+/* Seta no meio de um texto: o svg é display:block por padrão, aqui fica na linha */
+.icone--texto {
+  display: inline-block;
+  vertical-align: -0.1em;
+}
+
+.icone--esquerda {
+  transform: scaleX(-1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

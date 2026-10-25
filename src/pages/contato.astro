@@ -1,0 +1,51 @@
+---
+// Contato: e-mail (mailto, sem formulário), LinkedIn e GitHub. Sem telefone.
+// O K3 em DAG e o botão "copiar" (precisa de JavaScript) são a Parte 6.
+import EmailTexto from '../components/EmailTexto.astro';
+import Icone from '../components/Icone.astro';
+import LinkEmail from '../components/LinkEmail.astro';
+import Pagina from '../layouts/Pagina.astro';
+import { site } from '../data/site';
+
+const canais = [
+  { nome: 'LinkedIn', url: site.linkedin, endereco: new URL(site.linkedin).pathname.replace(/\/$/, '') },
+  { nome: 'GitHub', url: site.github, endereco: new URL(site.github).pathname },
+];
+---
+
+<Pagina
+  titulo="Contato — Samuel Pires de Miranda"
+  descricao="Fale com Samuel Pires de Miranda, engenheiro de dados júnior em Goiânia/GO: e-mail, LinkedIn e GitHub."
+>
+  <header class="cabeca-pagina">
+    <p class="consulta" aria-hidden="true">
+      <span class="consulta__prompt">&gt;</span>
+      <span>SELECT canal, endereco FROM contatos;</span>
+    </p>
+    <h1 class="titulo-pagina">contato</h1>
+  </header>
+
+  <div class="canais">
+    <div class="canal canal--ativo">
+      <span class="canal__nome">e-mail</span>
+      <span class="canal__endereco"><EmailTexto /></span>
+      <div class="canal__acoes">
+        <LinkEmail class="botao botao--primario">escrever<Icone nome="seta" /></LinkEmail>
+      </div>
+    </div>
+    {
+      canais.map((c) => (
+        <a class="canal" href={c.url} target="_blank" rel="noopener noreferrer">
+          <span class="canal__topo">
+            <span class="canal__nome">{c.nome}</span>
+            <span class="canal__abrir">
+              abrir <Icone nome="externo" />
+            </span>
+          </span>
+          <span class="canal__endereco">{c.endereco}</span>
+          <span class="sr-only">(abre em nova aba)</span>
+        </a>
+      ))
+    }
+  </div>
+</Pagina>

@@ -1,48 +1,29 @@
 ---
-import Base from '../layouts/Base.astro';
-
-const nome = 'Samuel Pires de Miranda';
-const titulo = 'Engenheiro de Dados Júnior';
+// Home = tela A2 em HTML real e estático. A abertura (A0→A1) e a malha WebGL entram por cima, na V2.
+import { site } from '../data/site';
+import Pagina from '../layouts/Pagina.astro';
 ---
 
-<Base
-  titulo={`${nome} — ${titulo}`}
-  descricao="Portfólio de Samuel Pires de Miranda, engenheiro de dados júnior em Goiânia/GO. Site em construção."
+<Pagina
+  titulo={`${site.nome} — ${site.titulo}`}
+  descricao={`${site.nome}, engenheiro de dados júnior em Goiânia/GO. ${site.resumo}`}
 >
-  <main id="conteudo">
-    <p class="selo">// em construção</p>
-    <h1>{nome}</h1>
-    <p class="titulo">{titulo}</p>
-    <p class="aviso">Meu portfólio está sendo construído. Volte em breve.</p>
-  </main>
-</Base>
-
-<style>
-  main {
-    min-height: 100vh;
-    display: grid;
-    align-content: center;
-    max-width: 60rem;
-    margin-inline: auto;
-    padding: var(--margem-pagina);
-  }
-
-  .selo {
-    color: var(--cor-azul-claro);
-    margin-bottom: var(--esp-4);
-  }
-
-  h1 {
-    font-size: var(--texto-titulo);
-  }
-
-  .titulo {
-    margin: var(--esp-2) 0 var(--esp-5);
-    color: var(--cor-azul-claro);
-    font-size: var(--texto-lead);
-  }
-
-  .aviso {
-    color: var(--cor-apagado);
-  }
-</style>
+  <section class="hero-a2">
+    <div class="hero-a2__texto">
+      <ol class="log" role="list" aria-label="Log de execução do pipeline">
+        <li><span class="log__hora">00:00:01</span><span class="log__nivel">INFO</span><span>extract</span><span class="log__msg">buscando dados na fonte</span></li>
+        <li><span class="log__hora">00:00:02</span><span class="log__nivel">INFO</span><span>transform</span><span class="log__msg">limpando e padronizando</span></li>
+        <li><span class="log__hora">00:00:03</span><span class="log__nivel">INFO</span><span>audit</span><span class="log__msg">validando a qualidade</span></li>
+        <li><span class="log__hora">00:00:04</span><span class="log__nivel log__nivel--ok">OK</span><span>load</span><span class="log__msg">carga concluída, sem duplicar</span></li>
+      </ol>
+      <h1 class="hero-nome">{site.nome}<span class="hero-nome__cursor" aria-hidden="true"></span></h1>
+      <p class="cargo"><span aria-hidden="true">&gt; </span>{site.titulo}</p>
+      <p class="hero-a2__resumo">{site.resumo}</p>
+      <div class="acoes">
+        <a class="botao botao--primario" href="/projetos"><span aria-hidden="true">[</span>ver projetos<span aria-hidden="true">]</span></a>
+        <a class="botao botao--secundario" href="/contato"><span aria-hidden="true">[</span>contato<span aria-hidden="true">]</span></a>
+      </div>
+    </div>
+    <div class="malha" aria-hidden="true"></div>
+  </section>
+</Pagina>

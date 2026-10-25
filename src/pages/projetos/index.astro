@@ -1,0 +1,68 @@
+---
+// Lista de projetos: lida da collection no build, mais recente primeiro (ORDER BY inicio DESC).
+// Sem o alternador "mapa | lista": o mapa só existe na V2 (Parte 4).
+import Icone from '../../components/Icone.astro';
+import TextoSeta from '../../components/TextoSeta.astro';
+import Pagina from '../../layouts/Pagina.astro';
+import { periodo } from '../../lib/datas';
+import { carregarProjetos, resumirStack } from '../../lib/projetos';
+
+const projetos = (await carregarProjetos()).reverse();
+const total = projetos.length;
+const registros = `${total} ${total === 1 ? 'registro' : 'registros'}`;
+---
+
+<Pagina
+  titulo="Projetos — Samuel Pires de Miranda"
+  descricao="Pipelines, APIs e análises de dados que Samuel Pires de Miranda construiu em 2026. Cada linha abre o estudo de caso do projeto."
+>
+  <header class="cabeca-pagina">
+    <p class="consulta" aria-hidden="true">
+      <span class="consulta__prompt">&gt;</span>
+      <span>SELECT * FROM projetos<span class="consulta__extra"> ORDER BY inicio DESC</span>;</span>
+    </p>
+    <h1 class="titulo-pagina">projetos</h1>
+    <p class="lead cabeca-pagina__lead">
+      Pipelines, APIs e análises de dados que construí em 2026. Cada linha abre o estudo de caso do projeto.
+    </p>
+  </header>
+
+  <p class="contador contador--topo">{registros} · mais recente primeiro</p>
+
+  <div>
+    <div class="lista-projetos__cabeca" aria-hidden="true">
+      <span>#</span><span>projeto</span><span>tipo</span><span>período</span><span>stack</span><span>destaque</span>
+      <span style="text-align: right">ação</span>
+    </div>
+    <ol class="lista-projetos" role="list">
+      {
+        projetos.map((p) => (
+          <li>
+            <a class="lista-projetos__linha" href={`/projetos/${p.id}`}>
+              <span class="lista-projetos__num">{p.numero}</span>
+              <span class="lista-projetos__nome">
+                <Icone nome="estrela" class={p.data.destaque ? undefined : 'estrela--vazia'} />
+                {p.data.titulo}
+                {p.data.destaque && <span class="sr-only">(em destaque)</span>}
+              </span>
+              <span class="lista-projetos__tipo">{p.data.tipo}</span>
+              <span class:list={['lista-projetos__periodo', !p.data.fim && 'lista-projetos__periodo--andamento']}>
+                <TextoSeta texto={periodo(p.data.inicio, p.data.fim)} />
+              </span>
+              <span class="lista-projetos__stack">{resumirStack(p.data.stack)}</span>
+              <span class="lista-projetos__destaque">{p.data.chamada && <TextoSeta texto={p.data.chamada} />}</span>
+              <span class="lista-projetos__acao" aria-hidden="true">
+                <span class="lista-projetos__acao-texto">abrir </span>
+                <Icone nome="seta" class="icone--texto" />
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+    <div class="lista-projetos-rodape">
+      <span class="contador">{registros}</span>
+      <span class="legenda-estrela"><Icone nome="estrela" />= em destaque</span>
+    </div>
+  </div>
+</Pagina>

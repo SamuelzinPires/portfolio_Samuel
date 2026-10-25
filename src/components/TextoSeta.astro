@@ -1,0 +1,20 @@
+---
+// Texto com "→" trocado por SVG. O subconjunto latino da fonte hospedada não tem o glifo:
+// como texto ele cairia na fonte do sistema, com desenho diferente em cada aparelho.
+import Icone from './Icone.astro';
+
+interface Props {
+  texto: string;
+}
+
+const partes = Astro.props.texto.split('→');
+---
+
+{
+  partes.map((parte, i) => (
+    <>
+      {i > 0 && <Icone nome="seta" class="icone--texto" />}
+      {parte}
+    </>
+  ))
+}
