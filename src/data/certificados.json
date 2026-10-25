@@ -1,0 +1,58 @@
+[
+  {
+    "id": "understanding-cloud-computing",
+    "titulo": "Understanding Cloud Computing",
+    "emissor": "DataCamp",
+    "trilha": "conceitos",
+    "conclusao": "2026-08-03"
+  },
+  {
+    "id": "introduction-to-python-for-developers",
+    "titulo": "Introduction to Python for Developers",
+    "emissor": "DataCamp",
+    "trilha": "linguagem",
+    "conclusao": "2026-08-04"
+  },
+  {
+    "id": "understanding-data-engineering",
+    "titulo": "Understanding Data Engineering",
+    "emissor": "DataCamp",
+    "trilha": "conceitos",
+    "conclusao": "2026-08-07"
+  },
+  {
+    "id": "intermediate-python-for-developers",
+    "titulo": "Intermediate Python for Developers",
+    "emissor": "DataCamp",
+    "trilha": "linguagem",
+    "conclusao": "2026-08-07"
+  },
+  {
+    "id": "introduction-to-importing-data-in-python",
+    "titulo": "Introduction to Importing Data in Python",
+    "emissor": "DataCamp",
+    "trilha": "dados",
+    "conclusao": "2026-08-11"
+  },
+  {
+    "id": "intermediate-importing-data-in-python",
+    "titulo": "Intermediate Importing Data in Python",
+    "emissor": "DataCamp",
+    "trilha": "dados",
+    "conclusao": "2026-08-20"
+  },
+  {
+    "id": "introduction-to-apis-in-python",
+    "titulo": "Introduction to APIs in Python",
+    "emissor": "DataCamp",
+    "trilha": "dados",
+    "conclusao": "2026-08-27"
+  },
+  {
+    "id": "cleaning-data-in-python",
+    "titulo": "Cleaning Data in Python",
+    "emissor": "DataCamp",
+    "trilha": "dados",
+    "conclusao": "2026-10-20"
+  }
+]
