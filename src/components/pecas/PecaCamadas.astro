@@ -1,0 +1,72 @@
+---
+// 003 · A forma da tabela em cada camada (bronze → Lambda → prata → ouro), de larga para longa.
+// Só o cabeçalho tem texto: as linhas vazias mostram o formato, sem inventar contagem. Celular: as camadas
+// empilham na vertical.
+import type { Dados } from '../../lib/pecas-tipos';
+import TextoSeta from '../TextoSeta.astro';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'camadas'>;
+}
+
+const { dados } = Astro.props;
+---
+
+<Peca tipo="camadas" comentario={dados.comentario}>
+  <div class="camadas">
+    {
+      dados.camadas.map((c) => (
+        <section class={`camada camada--${c.tom}`} aria-label={c.nome}>
+          <div class="camada__cabeca">
+            <h3 class="camada__nome">{c.nome}</h3>
+            <span class="camada__formato">{c.formato}</span>
+          </div>
+          {c.colunas && (
+            <table class="forma-tabela">
+              <caption class="sr-only">Forma da tabela na camada {c.nome}: colunas {c.colunas.join(', ')}</caption>
+              <thead>
+                <tr>
+                  {c.colunas.map((nome) => (
+                    <th scope="col" class:list={[nome === '…' || /\.$/.test(nome) ? 'is-vaga' : undefined]}>
+                      {nome}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody aria-hidden="true">
+                {Array.from({ length: c.linhas ?? 0 }, () => (
+                  <tr>{c.colunas!.map(() => <td />)}</tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {c.passos && (
+            <ol class="camada__passos" role="list">
+              {c.passos.map((p) => (
+                <li><span><TextoSeta texto={p} /></span></li>
+              ))}
+            </ol>
+          )}
+          {c.itens && (
+            <ul class="camada__itens" role="list">
+              {c.itens.map((p) => (
+                <li><TextoSeta texto={p} /></li>
+              ))}
+            </ul>
+          )}
+          {c.legenda && <p class="camada__legenda">{c.legenda}</p>}
+        </section>
+      ))
+    }
+  </div>
+
+  {
+    dados.codigo && (
+      <div class="peca__codigo peca__codigo--lado">
+        <pre class="codigo"><code>{dados.codigo.trimEnd()}</code></pre>
+        {dados.notaCodigo && <p class="peca__nota">{dados.notaCodigo}</p>}
+      </div>
+    )
+  }
+</Peca>

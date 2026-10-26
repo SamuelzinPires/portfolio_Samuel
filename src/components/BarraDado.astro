@@ -1,0 +1,58 @@
+---
+// Uma linha de barra horizontal (.barra-dado). O trilho é um SVG de 100 × 10: a largura da barra vai no
+// atributo `width` do <rect>, sem `style` inline. Com `item`, a linha vira <button> e a peça a seleciona.
+import { larguraDaBarra } from '../lib/numeros';
+
+interface Props {
+  rotulo: string;
+  /** Largura da barra, de 0 a 100. */
+  valor: number;
+  /** Texto do número ao lado ("135.080", "98,14%"). */
+  numero: string;
+  tom?: 'ok' | 'falha' | 'dado';
+  /** Linha de total: barra só com contorno, em cinza. */
+  total?: boolean;
+  /** Trilho com fundo (a barra é parte de um todo). */
+  fundo?: boolean;
+  /** Id do item selecionável (vira <button data-item>). */
+  item?: string;
+  /** Ids de itens que acendem esta linha (data-liga). */
+  liga?: string;
+  ativo?: boolean;
+  ligado?: boolean;
+}
+
+const { rotulo, valor, numero, tom = 'ok', total = false, fundo = false, item, liga, ativo = false, ligado = false } =
+  Astro.props;
+const botao = item !== undefined;
+const Linha = botao ? 'button' : 'div';
+// só o <button> leva type, data-item e aria-pressed (a <div> da linha só de leitura não)
+const atributosDoBotao: Record<string, string | undefined> = botao
+  ? { type: 'button', 'data-item': item, 'aria-pressed': String(ativo) }
+  : {};
+---
+
+<li>
+  <Linha
+    class:list={[
+      'barra-dado',
+      tom !== 'ok' && `barra-dado--${tom}`,
+      total && 'barra-dado--total',
+      (ativo || ligado) && (botao ? 'is-ativo' : 'is-ligado'),
+    ]}
+    data-liga={liga}
+    {...atributosDoBotao}
+  >
+    <span class="barra-dado__rotulo">{rotulo}</span>
+    <svg
+      class:list={['barra-dado__trilho', fundo && 'barra-dado__trilho--fundo']}
+      viewBox="0 0 100 10"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect class="barra-dado__valor" width={larguraDaBarra(valor)} height="10"></rect>
+    </svg>
+    <span class="barra-dado__numero">{numero}</span>
+  </Linha>
+</li>

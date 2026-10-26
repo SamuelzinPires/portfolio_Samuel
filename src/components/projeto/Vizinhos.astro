@@ -1,0 +1,65 @@
+---
+// Mini linha do tempo da página de projeto: anterior · aqui · próximo, em ordem cronológica, mais um projeto
+// de contexto. No último projeto o "próximo" ainda não existe e mostra "em progresso".
+import { periodoCurto, vizinhancaDe, type Projeto } from '../../lib/projetos';
+import Icone from '../Icone.astro';
+import TextoSeta from '../TextoSeta.astro';
+
+interface Props {
+  atual: Projeto;
+  projetos: Projeto[];
+}
+
+const { atual, projetos } = Astro.props;
+const { antes, anterior, proximo, depois, emProgresso } = vizinhancaDe(projetos, atual);
+const href = (p: Projeto) => `/projetos/${p.id}`;
+---
+
+<ol class="vizinhos" role="list">
+  {
+    antes && (
+      <li class="vizinho vizinho--contexto">
+        <span class="vizinho__rotulo">{antes.numero} · {periodoCurto(antes)}</span>
+        <a class="vizinho__nome" href={href(antes)}>{antes.data.titulo}</a>
+      </li>
+    )
+  }
+  {
+    anterior && (
+      <li class="vizinho vizinho--anterior">
+        <span class="vizinho__rotulo">
+          <Icone nome="seta" class="icone--texto icone--esquerda" /> anterior · {periodoCurto(anterior)}
+        </span>
+        <a class="vizinho__nome" href={href(anterior)}>{anterior.numero} · {anterior.data.titulo}</a>
+      </li>
+    )
+  }
+  <li class="vizinho vizinho--aqui">
+    <span class="vizinho__rotulo">você está aqui · {periodoCurto(atual)}</span>
+    <span class="vizinho__nome" aria-current="page">{atual.numero} · {atual.data.titulo}</span>
+  </li>
+  {
+    proximo && (
+      <li class="vizinho vizinho--proximo">
+        <span class="vizinho__rotulo"><TextoSeta texto={`próximo · ${periodoCurto(proximo)} →`} /></span>
+        <a class="vizinho__nome" href={href(proximo)}>{proximo.numero} · {proximo.data.titulo}</a>
+      </li>
+    )
+  }
+  {
+    emProgresso && (
+      <li class="vizinho vizinho--progresso">
+        <span class="vizinho__rotulo">próximo</span>
+        <span class="vizinho__nome">em progresso</span>
+      </li>
+    )
+  }
+  {
+    depois && (
+      <li class="vizinho vizinho--contexto">
+        <span class="vizinho__rotulo">{depois.numero} · {periodoCurto(depois)}</span>
+        <a class="vizinho__nome" href={href(depois)}>{depois.data.titulo}</a>
+      </li>
+    )
+  }
+</ol>

@@ -1,0 +1,114 @@
+---
+// 005 · Tabelas de origem → views. Cada view responde uma pergunta de negócio; passar o cursor (ou tocar)
+// numa view acende as tabelas que ela consulta e abre a pergunta e o SQL ao lado.
+// Celular: o grafo vira a lista das views (tocar mostra as tabelas). A partir de 768 px: o grafo, com as
+// tabelas à esquerda, as curvas no meio (SVG em percentual, esticado) e as views à direita.
+import type { Dados } from '../../lib/pecas-tipos';
+import Icone from '../Icone.astro';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'grafo'>;
+}
+
+const { dados } = Astro.props;
+const selecionada = dados.views.find((v) => v.nome === dados.selecionada) ?? dados.views[0];
+const yTabela = (i: number) => ((i + 0.5) / dados.tabelas.length) * 100;
+const yView = (j: number) => ((j + 0.5) / dados.views.length) * 100;
+
+const curvas = dados.views.flatMap((v, j) =>
+  v.tabelas.flatMap((t) => {
+    const i = dados.tabelas.indexOf(t);
+    return i < 0 ? [] : [{ view: v.nome, d: `M0,${yTabela(i)} C50,${yTabela(i)} 50,${yView(j)} 100,${yView(j)}` }];
+  }),
+);
+// a view aberta é desenhada por último, para as linhas azuis ficarem por cima das cinzas
+const curvasOrdenadas = [...curvas.filter((c) => c.view !== selecionada.nome), ...curvas.filter((c) => c.view === selecionada.nome)];
+const viewsDaTabela = (tabela: string) => dados.views.filter((v) => v.tabelas.includes(tabela)).map((v) => v.nome);
+---
+
+<Peca tipo="grafo" comentario={dados.comentario} viva>
+  <ul class="grafo__lista" role="list">
+    {
+      dados.views.map((v) => (
+        <li>
+          <button
+            type="button"
+            class:list={['grafo__item', v === selecionada && 'is-ativo']}
+            data-item={v.nome}
+            aria-pressed={String(v === selecionada) as 'true' | 'false'}
+          >
+            <span class="grafo__nome">{v.nome}</span>
+            <span class="grafo__conceito">{v.conceito}</span>
+            <span class="grafo__usa">usa: {v.tabelas.join(' · ')}</span>
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="grafo">
+    <ul class="grafo__tabelas" role="list" aria-label="Tabelas de origem">
+      {
+        dados.tabelas.map((t) => (
+          <li>
+            <span
+              class:list={['grafo__tabela', selecionada.tabelas.includes(t) && 'is-ligado']}
+              data-liga={viewsDaTabela(t).join(' ')}
+            >
+              {t}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+    <svg class="grafo__curvas" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      {
+        curvasOrdenadas.map((c) => (
+          <path
+            class:list={['grafo__curva', c.view === selecionada.nome && 'is-ligado']}
+            data-liga={c.view}
+            d={c.d}
+          />
+        ))
+      }
+    </svg>
+    <ul class="grafo__views" role="list" aria-label="Views">
+      {
+        dados.views.map((v) => (
+          <li>
+            <button
+              type="button"
+              class:list={['grafo__view', v === selecionada && 'is-ativo']}
+              data-item={v.nome}
+              aria-pressed={String(v === selecionada) as 'true' | 'false'}
+            >
+              <span class="grafo__nome">{v.nome}</span>
+              <span class="grafo__conceito">{v.conceito}</span>
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <Fragment slot="painel">
+    {
+      dados.views.map((v) => (
+        <div class="peca__painel-item" data-painel={v.nome} hidden={v !== selecionada}>
+          <div class="peca__cabeca">
+            <strong class="peca__titulo">{v.nome}</strong>
+            <span class="peca__meta">{v.tabelas.join(' · ')}</span>
+          </div>
+          <p class="peca__texto">{v.pergunta}</p>
+          <pre class="codigo"><code>{v.codigo.trimEnd()}</code></pre>
+        </div>
+      ))
+    }
+  </Fragment>
+
+  <ul class="legenda" role="list" slot="legenda">
+    <li><span class="quadrado-status quadrado-status--selecionado"></span>{dados.legenda.aberta}</li>
+    <li class="legenda__so-medio"><span class="legenda__linha"></span>{dados.legenda.ligacao}</li>
+  </ul>
+</Peca>

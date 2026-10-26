@@ -1,31 +1,47 @@
 ---
-// Esqueleto da página de projeto: título, resumo, ficha lateral e o corpo em Markdown, só com o que existe.
-// O molde "estudo de caso" completo (números, peça-assinatura, decisões…) é a Parte 5.
+// Página de projeto = estudo de caso. Tudo vem do .md da collection `projetos`: criar um projeto novo é
+// só criar um arquivo. Seção sem dado NÃO aparece (nada de placeholder, selo ou caixa vazia); o que falta é
+// avisado no terminal do build (src/lib/lacunas.ts).
+//
+// Ordem (molde aprovado na 1C): migalha → título + 1–2 números → peça-assinatura (dados reais) →
+// por que existe → como funciona → decisões → o que aprendi → próximos passos, com a lateral
+// (período, stack, links) ao lado → linha do tempo com anterior e próximo.
+import { Image } from 'astro:assets';
 import { render } from 'astro:content';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import Icone from '../../components/Icone.astro';
+import Lateral from '../../components/projeto/Lateral.astro';
+import Vizinhos from '../../components/projeto/Vizinhos.astro';
+import PecaAssinatura from '../../components/pecas/PecaAssinatura.astro';
 import TextoSeta from '../../components/TextoSeta.astro';
 import Pagina from '../../layouts/Pagina.astro';
 import { periodo } from '../../lib/datas';
+import { avisarLacunas } from '../../lib/lacunas';
 import { carregarProjetos, type Projeto } from '../../lib/projetos';
 
 export async function getStaticPaths() {
   const projetos = await carregarProjetos();
-  return projetos.map((projeto) => ({ params: { slug: projeto.id }, props: { projeto } }));
+  avisarLacunas(projetos);
+  return projetos.map((projeto) => ({ params: { slug: projeto.id }, props: { projeto, projetos } }));
 }
 
 interface Props {
   projeto: Projeto;
+  projetos: Projeto[];
 }
 
-const { projeto } = Astro.props;
+const { projeto, projetos } = Astro.props;
 const { numero, data: d } = projeto;
 const emAndamento = !d.fim;
-const temCorpo = Boolean(projeto.body?.trim());
-const Corpo = temCorpo ? (await render(projeto)).Content : null;
-const nomeRepo = (url: string) => new URL(url).pathname.split('/').filter(Boolean).pop() ?? url;
+const Corpo = projeto.body?.trim() ? (await render(projeto)).Content : null;
+
+// Imagem de compartilhamento: a do projeto (npm run og) ou, enquanto não existe, a padrão do site
+const temOg = existsSync(join(process.cwd(), 'public', 'og', `${projeto.id}.png`));
+const imagemOg = temOg ? `/og/${projeto.id}.png` : '/og/padrao.png';
 ---
 
-<Pagina titulo={`${d.titulo} — Samuel Pires de Miranda`} descricao={d.resumo}>
+<Pagina titulo={`${d.titulo} — Samuel Pires de Miranda`} descricao={d.resumo} imagem={imagemOg} tipoOg="article">
   <p class="migalha migalha--pagina">
     <a href="/projetos"><Icone nome="seta" class="icone--texto icone--esquerda" /> projetos</a>
     <span>/ {numero} · {d.tipo}</span>
@@ -43,53 +59,121 @@ const nomeRepo = (url: string) => new URL(url).pathname.split('/').filter(Boolea
       <h1 class="titulo-pagina">{d.titulo}</h1>
       <p class="lead">{d.resumo}</p>
     </div>
+    {
+      d.numeros && (
+        <dl class="numeros">
+          {d.numeros.map((n) => (
+            <div class="numero">
+              <dt class="numero__rotulo">{n.rotulo}</dt>
+              <dd class:list={['numero__valor', n.tom && `numero__valor--${n.tom}`]}>{n.valor}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
   </div>
 
-  <div class="colunas-projeto">
-    <div class="colunas-projeto__principal">
-      {Corpo && <div class="texto-corrido"><Corpo /></div>}
+  {
+    d.peca && (
+      <section class="secao" aria-label="Dados reais do projeto">
+        <PecaAssinatura peca={d.peca} projetos={projetos} />
+      </section>
+    )
+  }
+
+  <div class="secao">
+    <div class="colunas-projeto">
+      <div class="colunas-projeto__principal">
+        {
+          Corpo && (
+            <section class="bloco">
+              <h2>Por que existe</h2>
+              <div class="texto-corrido"><Corpo /></div>
+            </section>
+          )
+        }
+
+        {
+          d.comoFunciona && (
+            <section class="bloco">
+              <div class="secao__cabeca">
+                <h2>Como funciona</h2>
+                {d.comoFunciona.nota && <span class="secao__meta">{d.comoFunciona.nota}</span>}
+              </div>
+              <ol class:list={['dag', d.comoFunciona.tom === 'azul' && 'dag--azul']} role="list">
+                {d.comoFunciona.etapas.map((e) => (
+                  <li class="dag__no">
+                    <span class="dag__titulo">{e.etapa}</span>
+                    <span class="dag__desc"><TextoSeta texto={e.texto} /></span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          d.imagens && d.imagens.length > 0 && (
+            <section class="bloco">
+              <h2>Imagens</h2>
+              {d.imagens.map((imagem) => (
+                <figure class="figura">
+                  <Image src={imagem.src} alt={imagem.alt} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 860px, 100vw" />
+                  {imagem.legenda && <figcaption>{imagem.legenda}</figcaption>}
+                </figure>
+              ))}
+            </section>
+          )
+        }
+
+        {
+          d.decisoes && (
+            <section class="bloco">
+              <h2>Decisões</h2>
+              <ol class="decisoes" role="list">
+                {d.decisoes.map((x) => (
+                  <li class="decisoes__item">
+                    <span class="decisoes__titulo">{x.decisao}</span>
+                    <span class="decisoes__motivo"><TextoSeta texto={x.motivo} /></span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          d.aprendizados && (
+            <section class="bloco">
+              <h2>O que aprendi</h2>
+              <ul class="lista-marcador" role="list">
+                {d.aprendizados.map((x) => <li><TextoSeta texto={x} /></li>)}
+              </ul>
+            </section>
+          )
+        }
+
+        {
+          d.proximosPassos && (
+            <section class="bloco">
+              <h2>Próximos passos</h2>
+              <ul class="lista-marcador lista-marcador--apagado" role="list">
+                {d.proximosPassos.map((x) => <li><TextoSeta texto={x} /></li>)}
+              </ul>
+            </section>
+          )
+        }
+      </div>
+      <Lateral projeto={projeto} />
     </div>
-    <dl class="lateral">
-      <div class="lateral__item">
-        <dt class="lateral__rotulo">período</dt>
-        <dd class="lateral__valor"><TextoSeta texto={periodo(d.inicio, d.fim)} /></dd>
-      </div>
-      <div class="lateral__item">
-        <dt class="lateral__rotulo">stack</dt>
-        <dd class="lateral__valor">
-          <ul class="lateral__lista" role="list">
-            {d.stack.map((tecnologia) => <li>{tecnologia}</li>)}
-          </ul>
-        </dd>
-      </div>
-      {
-        d.repo && (
-          <div class="lateral__item">
-            <dt class="lateral__rotulo">código no GitHub</dt>
-            <dd class="lateral__valor">
-              <a class="link-externo" href={d.repo} target="_blank" rel="noopener noreferrer">
-                {nomeRepo(d.repo)}
-                <Icone nome="externo" />
-                <span class="sr-only">(abre em nova aba)</span>
-              </a>
-            </dd>
-          </div>
-        )
-      }
-      {
-        d.demo && (
-          <div class="lateral__item">
-            <dt class="lateral__rotulo">ao vivo</dt>
-            <dd class="lateral__valor">
-              <a class="link-externo" href={d.demo} target="_blank" rel="noopener noreferrer">
-                ver demonstração
-                <Icone nome="externo" />
-                <span class="sr-only">(abre em nova aba)</span>
-              </a>
-            </dd>
-          </div>
-        )
-      }
-    </dl>
   </div>
+
+  <section class="secao">
+    <p class="rotulo-comentario">// linha do tempo · ordem cronológica</p>
+    <Vizinhos atual={projeto} {projetos} />
+  </section>
 </Pagina>
+
+<script>
+  import '../../scripts/pecas';
+</script>

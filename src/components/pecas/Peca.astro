@@ -1,0 +1,31 @@
+---
+// Base comum das peças-assinatura: linha "// …", visual, painel de detalhe (opcional) e legenda.
+// A interação (passar o cursor, tocar, setas, "‹ ›") é do src/scripts/pecas.ts e só liga em quem
+// tem `data-item`; sem JavaScript a peça aparece no estado inicial, legível.
+import TextoSeta from '../TextoSeta.astro';
+
+interface Props {
+  tipo: string;
+  comentario: string;
+  /** Painel que troca de conteúdo: avisa leitor de tela a cada mudança. */
+  viva?: boolean;
+}
+
+const { tipo, comentario, viva = false } = Astro.props;
+const temPainel = Astro.slots.has('painel');
+---
+
+<div class={`peca peca--${tipo}`} data-peca>
+  <p class="rotulo-comentario">// <TextoSeta texto={comentario} /></p>
+  <div class:list={['peca__corpo', temPainel && 'peca__corpo--painel']}>
+    <div class="peca__visual"><slot /></div>
+    {
+      temPainel && (
+        <div class="peca__painel" aria-live={viva ? 'polite' : undefined}>
+          <slot name="painel" />
+        </div>
+      )
+    }
+  </div>
+  <slot name="legenda" />
+</div>

@@ -1,0 +1,31 @@
+---
+// Escolhe o componente da peça-assinatura pelo `peca.tipo` do frontmatter. Tipo novo = um componente
+// novo aqui, o tipo no schema (src/content.config.ts) e a peça na /design.
+import type { Peca } from '../../content.config';
+import type { Projeto } from '../../lib/projetos';
+import PecaBarras from './PecaBarras.astro';
+import PecaCalendario from './PecaCalendario.astro';
+import PecaCamadas from './PecaCamadas.astro';
+import PecaCategorias from './PecaCategorias.astro';
+import PecaEndpoints from './PecaEndpoints.astro';
+import PecaFitaCi from './PecaFitaCi.astro';
+import PecaGrafo from './PecaGrafo.astro';
+import PecaPaginas from './PecaPaginas.astro';
+
+interface Props {
+  peca: Peca;
+  /** Todos os projetos: algumas peças apontam para outro projeto (ex.: "alimenta o 006"). */
+  projetos: Projeto[];
+}
+
+const { peca, projetos } = Astro.props;
+---
+
+{peca.tipo === 'calendario' && <PecaCalendario dados={peca.dados} />}
+{peca.tipo === 'categorias' && <PecaCategorias dados={peca.dados} />}
+{peca.tipo === 'paginas' && <PecaPaginas dados={peca.dados} projetos={projetos} />}
+{peca.tipo === 'camadas' && <PecaCamadas dados={peca.dados} />}
+{peca.tipo === 'fita-ci' && <PecaFitaCi dados={peca.dados} />}
+{peca.tipo === 'grafo' && <PecaGrafo dados={peca.dados} />}
+{peca.tipo === 'endpoints' && <PecaEndpoints dados={peca.dados} />}
+{peca.tipo === 'barras' && <PecaBarras dados={peca.dados} />}

@@ -1,0 +1,73 @@
+---
+// Coluna lateral da página de projeto: período, stack e links. Só entra o que existe no .md:
+// repositório privado (sem `repo`) = sem link, sem aviso na tela.
+import { periodo } from '../../lib/datas';
+import type { Projeto } from '../../lib/projetos';
+import Icone from '../Icone.astro';
+import TextoSeta from '../TextoSeta.astro';
+
+interface Props {
+  projeto: Projeto;
+}
+
+const { data: d } = Astro.props.projeto;
+const nomeRepo = (url: string) => new URL(url).pathname.split('/').filter(Boolean).pop() ?? url;
+const stack = d.stackDetalhe ?? d.stack;
+---
+
+<dl class="lateral">
+  <div class="lateral__item">
+    <dt class="lateral__rotulo">período</dt>
+    <dd class="lateral__valor"><TextoSeta texto={periodo(d.inicio, d.fim, 'em andamento')} /></dd>
+  </div>
+  <div class="lateral__item">
+    <dt class="lateral__rotulo">stack</dt>
+    <dd class="lateral__valor">
+      <ul class="lateral__lista" role="list">
+        {stack.map((tecnologia) => <li>{tecnologia}</li>)}
+      </ul>
+    </dd>
+  </div>
+  {
+    d.links?.map((link) => (
+      <div class="lateral__item">
+        <dt class="lateral__rotulo">{link.rotulo}</dt>
+        <dd class="lateral__valor">
+          <a class="link-externo link-externo--texto" href={link.url} target="_blank" rel="noopener noreferrer">
+            {link.texto}
+            <Icone nome="externo" class="icone--texto" />
+            <span class="sr-only">(abre em nova aba)</span>
+          </a>
+        </dd>
+      </div>
+    ))
+  }
+  {
+    d.repo && (
+      <div class="lateral__item">
+        <dt class="lateral__rotulo">código no GitHub</dt>
+        <dd class="lateral__valor">
+          <a class="link-externo link-externo--texto" href={d.repo} target="_blank" rel="noopener noreferrer">
+            {nomeRepo(d.repo)}
+            <Icone nome="externo" class="icone--texto" />
+            <span class="sr-only">(abre em nova aba)</span>
+          </a>
+        </dd>
+      </div>
+    )
+  }
+  {
+    d.demo && (
+      <div class="lateral__item">
+        <dt class="lateral__rotulo">ao vivo</dt>
+        <dd class="lateral__valor">
+          <a class="link-externo link-externo--texto" href={d.demo} target="_blank" rel="noopener noreferrer">
+            ver demonstração
+            <Icone nome="externo" class="icone--texto" />
+            <span class="sr-only">(abre em nova aba)</span>
+          </a>
+        </dd>
+      </div>
+    )
+  }
+</dl>

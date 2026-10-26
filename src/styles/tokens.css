@@ -37,6 +37,7 @@
   --cor-metodo-delete: var(--cor-texto);
   --cor-camada-bronze: var(--cor-apagado);
   --cor-camada-prata: var(--cor-texto);
+  --cor-camada-lambda: var(--cor-azul-claro);
   --cor-camada-ouro: var(--cor-ambar);
 
   /* Proximidade do cursor (Z1): ponto longe → perto → muito perto */
@@ -93,6 +94,7 @@
   --largura-conteudo: 82rem;                                     /* 1312 px = 1440 − 2 × 64 */
   --largura-texto: 68ch;                                         /* linha confortável de leitura */
   --largura-lateral: 18.5rem;                                    /* 296 px · coluna lateral da página de projeto */
+  --largura-painel: 27.5rem;                                     /* 440 px · painel de detalhe ao lado da peça-assinatura */
   --gap-colunas: clamp(3rem, 1.8857rem + 4.5714vw, 6rem);        /* 48 → 96 px · entre coluna principal e lateral */
   --alvo-toque: 44px;                                            /* menor área tocável no celular */
 
@@ -142,6 +144,8 @@
    *   celular   390 px  → estilos base (mobile-first)
    *   tablet    768 px  → @media (min-width: 768px)
    *   notebook 1024 px  → @media (min-width: 1024px): tabela da lista e coluna lateral do projeto
+   *   largo    1280 px  → @media (min-width: 1280px): painel de detalhe ao lado da peça-assinatura
+   *                       (abaixo disso o painel desce para baixo da peça, que ganha a largura toda)
    *   desktop  1440 px  → @media (min-width: 1440px)
    * Entre eles, tipo e espaço já se ajustam sozinhos pelos clamp() acima.
    */

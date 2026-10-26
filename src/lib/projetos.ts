@@ -1,6 +1,7 @@
 // Leitura da collection `projetos` no build. Projeto novo = um .md novo: ele entra na ordem certa e
 // ganha o número seguinte sozinho. Nada é buscado em tempo de execução.
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { mesAno, periodo } from './datas';
 
 export type Projeto = CollectionEntry<'projetos'> & { numero: string };
 
@@ -16,4 +17,31 @@ export function resumirStack(stack: string[], visiveis = 3): string {
   const resto = stack.length - visiveis;
   const mostradas = stack.slice(0, visiveis).join(' · ');
   return resto > 0 ? `${mostradas} +${resto}` : mostradas;
+}
+
+/** Período para a linha do tempo: projeto em andamento mostra só o mês em que começou ("ago/2026"). */
+export const periodoCurto = (p: Projeto) => (p.data.fim ? periodo(p.data.inicio, p.data.fim) : mesAno(p.data.inicio));
+
+export interface Vizinhanca {
+  /** Dois projetos antes deste (contexto), se existir. */
+  antes?: Projeto;
+  anterior?: Projeto;
+  proximo?: Projeto;
+  /** Dois depois deste: só para o primeiro projeto, que não tem anterior nem contexto antes. */
+  depois?: Projeto;
+  /** Último projeto: o "próximo" ainda não existe e a linha do tempo mostra "em progresso". */
+  emProgresso: boolean;
+}
+
+/** Anterior e próximo em ordem cronológica, mais um projeto de contexto (a linha do tempo mostra até 4). */
+export function vizinhancaDe(todos: Projeto[], atual: Projeto): Vizinhanca {
+  const i = todos.findIndex((p) => p.id === atual.id);
+  const anterior = todos[i - 1];
+  return {
+    antes: todos[i - 2],
+    anterior,
+    proximo: todos[i + 1],
+    depois: anterior ? undefined : todos[i + 2],
+    emProgresso: i === todos.length - 1,
+  };
 }

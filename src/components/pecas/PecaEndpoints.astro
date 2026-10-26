@@ -1,0 +1,82 @@
+---
+// 006 · Os endpoints da API: método, rota, o que faz, respostas possíveis e se há teste automatizado.
+// O endpoint com `exemplo` abre a requisição e a resposta ao lado. Celular: cada endpoint vira um bloco
+// empilhado (método + rota, o que faz, resposta e teste).
+import type { Dados } from '../../lib/pecas-tipos';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'endpoints'>;
+}
+
+const { dados } = Astro.props;
+const selecionado = Math.min(dados.selecionado, dados.endpoints.length - 1);
+const temExemplo = dados.endpoints.some((e) => e.exemplo);
+---
+
+<Peca tipo="endpoints" comentario={dados.comentario} viva={temExemplo}>
+  <ul class="endpoints" role="list">
+    <li class="endpoints__cabeca" aria-hidden="true">
+      <span>método</span><span>rota</span><span>o que faz</span><span>resposta</span><span>teste</span>
+    </li>
+    {
+      dados.endpoints.map((e, i) => {
+        const Linha = e.exemplo ? 'button' : 'div';
+        const atributosDoBotao: Record<string, string | undefined> = e.exemplo
+          ? { type: 'button', 'data-item': String(i), 'aria-pressed': String(i === selecionado) }
+          : {};
+        return (
+          <li>
+            <Linha
+              class:list={['endpoint', i === selecionado && 'is-ativo']}
+              {...atributosDoBotao}
+            >
+              <span class:list={['metodo', `metodo--${e.metodo}`]}>{e.metodo.toUpperCase()}</span>
+              <span class="endpoint__rota">{e.rota}</span>
+              <span class="endpoint__desc">{e.descricao}</span>
+              <span class="endpoint__info">
+                <span class="endpoint__resposta">{e.resposta}</span>
+                <span class:list={['endpoint__teste', !e.teste && 'endpoint__teste--nao']}>
+                  {e.teste ? 'pytest' : '—'}
+                  <span class="sr-only">{e.teste ? '' : ' (sem teste)'}</span>
+                </span>
+              </span>
+            </Linha>
+          </li>
+        );
+      })
+    }
+  </ul>
+
+  {
+    temExemplo && (
+      <Fragment slot="painel">
+        {dados.endpoints.map(
+          (e, i) =>
+            e.exemplo && (
+              <div class="peca__painel-item" data-painel={String(i)} hidden={i !== selecionado}>
+                <div class="peca__cabeca">
+                  <strong class="peca__titulo">
+                    {e.metodo.toUpperCase()} {e.rota}
+                  </strong>
+                </div>
+                <pre class="codigo"><code>{e.exemplo.codigo.trimEnd()}</code></pre>
+                {e.exemplo.nota && <p class="peca__nota">{e.exemplo.nota}</p>}
+              </div>
+            ),
+        )}
+      </Fragment>
+    )
+  }
+
+  {
+    dados.legenda.length > 0 && (
+      <div class="legenda" slot="legenda">
+        <p>
+          <span class="endpoint__teste">pytest</span> {dados.legenda[0]}
+        </p>
+        {dados.legenda.slice(1).map((l) => <p>{l}</p>)}
+      </div>
+    )
+  }
+</Peca>

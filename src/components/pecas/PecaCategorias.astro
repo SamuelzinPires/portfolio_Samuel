@@ -1,0 +1,76 @@
+---
+// 001 · Do texto do extrato à categoria. À esquerda, exemplos escritos para a página (sem dado financeiro
+// real); à direita, as categorias com a contagem de palavras-chave das regras. Passar o cursor (ou tocar)
+// num exemplo acende a categoria em que ele cai.
+import type { Dados } from '../../lib/pecas-tipos';
+import BarraDado from '../BarraDado.astro';
+import Icone from '../Icone.astro';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'categorias'>;
+}
+
+const { dados } = Astro.props;
+const inicial = Math.max(
+  0,
+  dados.exemplos.findIndex((e) => e.categoria),
+);
+const maior = Math.max(...dados.categorias.map((c) => c.palavras));
+const exemplosDe = (nome: string) =>
+  dados.exemplos.flatMap((e, i) => (e.categoria === nome ? [String(i)] : [])).join(' ');
+---
+
+<Peca tipo="categorias" comentario={dados.comentario}>
+  {dados.aviso && <p class="peca__nota">{dados.aviso}</p>}
+  <ul class="exemplos" role="list">
+    {
+      dados.exemplos.map((e, i) => (
+        <li>
+          <button
+            type="button"
+            class:list={['exemplo', i === inicial && 'is-ativo']}
+            data-item={String(i)}
+            aria-pressed={String(i === inicial) as 'true' | 'false'}
+          >
+            <span class="exemplo__descricao">{e.descricao}</span>
+            <Icone nome="seta" class="exemplo__seta" />
+            <span class:list={['exemplo__categoria', !e.categoria && 'exemplo__categoria--vazia']}>
+              {e.categoria ?? 'sem categoria'}
+            </span>
+            <span class:list={['exemplo__regra', !e.categoria && 'exemplo__regra--vazia']}>{e.regra}</span>
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  <Fragment slot="painel">
+    <div class="peca__cabeca">
+      <strong class="peca__titulo">{dados.categorias.length} categorias</strong>
+      <span class="peca__meta">{dados.rotuloCategorias}</span>
+    </div>
+    <ul class="barras barras--marcador" role="list">
+      {
+        dados.categorias.map((c) => (
+          <BarraDado
+            rotulo={c.nome}
+            valor={(c.palavras / maior) * 100}
+            numero={String(c.palavras)}
+            tom="dado"
+            liga={exemplosDe(c.nome) || undefined}
+            ligado={exemplosDe(c.nome).split(' ').includes(String(inicial))}
+          />
+        ))
+      }
+    </ul>
+  </Fragment>
+
+  {
+    dados.notas.length > 0 && (
+      <div class="legenda" slot="legenda">
+        {dados.notas.map((nota) => <p>{nota}</p>)}
+      </div>
+    )
+  }
+</Peca>

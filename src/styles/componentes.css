@@ -46,6 +46,17 @@
   color: var(--cor-ok);
 }
 
+/* /slug da página de projeto: só a partir de 768 px (no celular o nome inteiro não cabe na barra) */
+.barra__sub {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .barra__sub {
+    display: inline;
+  }
+}
+
 .barra__nav {
   display: flex;
   gap: var(--esp-5);
@@ -108,6 +119,12 @@
   padding-top: var(--esp-7);
 }
 
+/* "← projetos" é o botão de voltar: a área tocável passa de 44 px sem mudar a altura da linha */
+.migalha--pagina a {
+  padding-block: var(--esp-3);
+  margin-block: calc(-1 * var(--esp-3));
+}
+
 .migalha__estado--andamento {
   color: var(--cor-ok);
 }
@@ -146,6 +163,17 @@
   display: inline-flex;
   align-items: center;
   gap: var(--esp-1);
+}
+
+/* Link longo que pode quebrar em duas linhas: o ícone acompanha a última palavra */
+.link-externo--texto {
+  display: inline;
+}
+
+.link-externo--texto .icone {
+  display: inline-block;
+  margin-left: var(--esp-1);
+  vertical-align: -0.1em;
 }
 
 .rodape__links a {
@@ -265,6 +293,7 @@
 .numero {
   display: flex;
   flex-direction: column-reverse;
+  justify-content: flex-end; /* em column-reverse, "fim" é o topo: os números alinham em cima mesmo com rótulos de 1 e 2 linhas */
   gap: var(--esp-2);
 }
 
@@ -332,10 +361,18 @@
 }
 
 .colunas-projeto__principal {
+  container: principal / inline-size; /* o DAG decide pela largura da coluna, não pela da tela */
   display: flex;
   flex-direction: column;
   gap: var(--esp-8);
   min-width: 0;
+}
+
+/* Bloco da coluna principal: título da seção + conteúdo */
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-5);
 }
 
 @media (min-width: 1024px) {
@@ -434,7 +471,9 @@
   color: var(--cor-apagado);
 }
 
-@media (min-width: 768px) {
+/* Em linha quando a coluna tem 640 px ou mais: com a lateral ao lado (1024–1279 px) a coluna é mais
+   estreita que a tela, e 4 nós em linha estourariam o título "transformar". */
+@container principal (min-width: 40rem) {
   .dag {
     flex-direction: row;
     gap: 44px;
@@ -639,7 +678,8 @@ a.vizinho__nome:hover {
 
 /* ── Dados ─────────────────────────────────────────────────────────── */
 
-/* Barras horizontais: o valor vai inline em --valor (0–100) */
+/* Barras horizontais. O trilho é um SVG de 100 × 10 e a largura da barra (0–100) vai no atributo
+   `width` do <rect>: nada de `style` inline, que a política de segurança da 7a bloquearia. */
 .barras {
   display: flex;
   flex-direction: column;
@@ -662,6 +702,7 @@ a.vizinho__nome:hover {
 
 .barra-dado__trilho {
   flex: 1 1 auto;
+  width: 100%;
   max-width: var(--barra-trilho, 14rem);
   height: 10px;
 }
@@ -671,19 +712,15 @@ a.vizinho__nome:hover {
 }
 
 .barra-dado__valor {
-  display: block;
-  width: calc(var(--valor, 0) * 1%);
-  min-width: 2px;
-  height: 100%;
-  background: var(--cor-ok);
+  fill: var(--cor-ok);
 }
 
 .barra-dado--falha .barra-dado__valor {
-  background: var(--cor-falha);
+  fill: var(--cor-falha);
 }
 
 .barra-dado--dado .barra-dado__valor {
-  background: var(--cor-dado);
+  fill: var(--cor-dado);
 }
 
 .barra-dado--total {
@@ -691,8 +728,73 @@ a.vizinho__nome:hover {
 }
 
 .barra-dado--total .barra-dado__valor {
-  background: transparent;
-  border: 1px solid var(--cor-apagado);
+  fill: transparent;
+  stroke: var(--cor-apagado);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Trilho e rótulo mais largos (peça com nomes de regra longos) */
+.barras--larga {
+  --barra-rotulo: 15rem;
+  --barra-trilho: 22rem;
+}
+
+/* Linha selecionável: o <button> é a própria linha */
+button.barra-dado {
+  width: 100%;
+  padding: var(--esp-1) 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-size: var(--texto-nav);
+  text-align: left;
+  cursor: pointer;
+}
+
+.barra-dado__rotulo {
+  position: relative;
+}
+
+/* Marcador "›" da linha aberta (ou ligada a um exemplo): ocupa um espaço fixo, então os rótulos não pulam */
+.barras--marcador .barra-dado__rotulo {
+  padding-left: 2ch;
+}
+
+.barras--marcador .is-ativo .barra-dado__rotulo::before,
+.barras--marcador .is-ligado .barra-dado__rotulo::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+}
+
+.barras--marcador .is-ativo .barra-dado__rotulo,
+.barras--marcador .is-ligado .barra-dado__rotulo {
+  font-weight: var(--peso-forte);
+}
+
+.barra-dado--dado.is-ligado .barra-dado__valor {
+  fill: var(--cor-azul-claro);
+}
+
+/* Celular: rótulo e número na primeira linha, o trilho inteiro embaixo */
+@media (max-width: 767px) {
+  .barras--empilhar .barra-dado {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--esp-1) var(--esp-3);
+  }
+
+  .barras--empilhar .barra-dado__rotulo {
+    flex: none;
+  }
+
+  .barras--empilhar .barra-dado__trilho {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: none;
+  }
 }
 
 .barra-dado__numero {
@@ -1269,6 +1371,852 @@ a.canal:hover,
 }
 
 .trilha-item__emissor {
+  font-size: var(--texto-rotulo);
+  color: var(--cor-apagado);
+}
+
+/* ── Peças-assinatura (página de projeto) ──────────────────────────── */
+/* Base comum: linha "// …", visual, painel de detalhe e legenda. Cada tipo de peça só acrescenta o desenho.
+   Valores que vêm dos dados entram como atributos de SVG (largura da barra, posição do quadrado), nunca como
+   `style` inline: a política de segurança (CSP) da 7a bloquearia. O painel só fica ao lado da peça a partir
+   de 1280 px; abaixo disso ele desce e a peça ganha a largura toda. */
+
+.peca {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-5);
+  min-width: 0;
+}
+
+.peca__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--esp-6);
+}
+
+.peca__visual,
+.peca__painel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-4);
+  min-width: 0;
+}
+
+@media (min-width: 1280px) {
+  .peca__corpo--painel {
+    grid-template-columns: minmax(0, 1fr) var(--largura-painel);
+    gap: var(--gap-colunas);
+  }
+}
+
+.peca__cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--esp-1) var(--esp-4);
+}
+
+.peca__titulo {
+  font-weight: var(--peso-forte);
+  overflow-wrap: anywhere;
+}
+
+.peca__meta,
+.peca__nota {
+  font-size: var(--texto-rotulo);
+  line-height: var(--entrelinha-media);
+  color: var(--cor-apagado);
+}
+
+.peca__texto {
+  font-size: var(--texto-nav);
+  line-height: var(--entrelinha-media);
+  color: var(--cor-apagado);
+  max-width: 36rem;
+}
+
+.peca__estado {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  font-size: var(--texto-nav);
+}
+
+.peca__fluxo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-1) var(--esp-2);
+  font-size: var(--texto-nav);
+  color: var(--cor-apagado);
+}
+
+.peca__fluxo strong {
+  color: var(--cor-texto);
+}
+
+.peca__codigo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-3);
+}
+
+.peca__codigo .codigo {
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .peca__codigo--lado {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--esp-6);
+  }
+
+  .peca__codigo--lado .codigo {
+    flex: 0 1 28rem;
+    min-width: 0;
+  }
+
+  .peca__codigo--lado .peca__nota {
+    max-width: 28rem;
+    padding-top: var(--esp-4);
+  }
+}
+
+/* Painel de detalhe: o texto da peça aparece aqui. Em celular o botão "‹ ›" troca o item aberto. */
+[data-painel][hidden] {
+  display: none;
+}
+
+.seletor--cabeca {
+  padding-bottom: var(--esp-2);
+}
+
+@media (min-width: 1024px) {
+  .seletor--cabeca {
+    padding-bottom: 0;
+  }
+
+  .seletor--cabeca .seletor__botao {
+    display: none; /* no computador o item abre ao passar o cursor, e a grade aceita as setas do teclado */
+  }
+
+  .seletor--cabeca .seletor__valor {
+    flex: 1 1 auto;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+}
+
+.quadrado-status--dado {
+  background: var(--cor-dado);
+}
+
+/* legenda do dia sem dado (o quadrado do calendário é .calendario__dia--vazio) */
+.quadrado-status--sem-dado {
+  background: var(--cor-painel);
+  border: 1px solid var(--cor-linha);
+  box-sizing: border-box;
+}
+
+.quadrado-status--vazio {
+  background: transparent;
+  border: 1px dashed var(--cor-ok);
+}
+
+/* "li.classe" porque `.legenda li` (display: flex) tem a mesma força de `.classe` sozinha */
+.legenda li.legenda__so-largo,
+.legenda li.legenda__so-medio {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .legenda li.legenda__so-medio {
+    display: flex;
+  }
+}
+
+@media (min-width: 1024px) {
+  .legenda li.legenda__so-largo {
+    display: flex;
+  }
+}
+
+/* traço azul da legenda do grafo ("tabelas que ela consulta") */
+.legenda__linha {
+  display: inline-block;
+  width: 1.25rem;
+  height: 2px;
+  background: var(--cor-azul-claro);
+}
+
+/* Bloco do painel que aparece e some (uma view, uma regra, um endpoint) */
+.peca__painel-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-3);
+}
+
+/* Barra "total" (SIN): linha tracejada em cima, barra só com contorno */
+.barras .barra-dado--total {
+  margin-top: var(--esp-1);
+  padding-top: var(--esp-3);
+  border-top: 1px dashed var(--cor-linha);
+}
+
+/* 008 · calendário do backfill ---------------------------------------- */
+
+.calendario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+}
+
+/* um <span> por semana (mesma largura das colunas do SVG); só os de início de mês têm texto */
+.calendario__meses {
+  display: flex;
+  font-size: var(--texto-micro);
+  line-height: 1;
+  color: var(--cor-apagado);
+}
+
+.calendario__meses span {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.calendario__grade {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.calendario__dia {
+  fill: var(--cor-ok);
+  cursor: pointer;
+}
+
+.calendario__dia--falha {
+  fill: var(--cor-falha);
+}
+
+/* dia do intervalo sem nenhum dado gravado: quadrado só com contorno */
+.calendario__dia--vazio {
+  fill: var(--cor-painel);
+  stroke: var(--cor-linha);
+  stroke-width: 1px;
+}
+
+.calendario__dia:hover {
+  stroke: var(--cor-texto);
+  stroke-width: 1px;
+}
+
+.calendario__anel {
+  fill: none;
+  stroke: var(--cor-selecionado);
+  stroke-width: 2px;
+  pointer-events: none;
+}
+
+/* 001 · exemplos de extrato → categoria ----------------------------------- */
+
+.exemplos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--borda);
+}
+
+.exemplos > li {
+  border-bottom: var(--borda);
+}
+
+.exemplo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'descricao descricao'
+    'seta categoria'
+    '. regra';
+  gap: var(--esp-1) var(--esp-2);
+  width: 100%;
+  padding: var(--esp-3);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.exemplo:hover,
+.exemplo.is-ativo {
+  background: var(--cor-codigo-fundo);
+}
+
+.exemplo__descricao {
+  grid-area: descricao;
+  font-size: var(--texto-nav);
+  font-weight: var(--peso-medio);
+}
+
+.exemplo__seta {
+  grid-area: seta;
+  align-self: center;
+  color: var(--cor-apagado);
+}
+
+.exemplo__categoria {
+  grid-area: categoria;
+  font-size: var(--texto-nav);
+  font-weight: var(--peso-forte);
+}
+
+.exemplo__regra {
+  grid-area: regra;
+  font-size: var(--texto-rotulo);
+  line-height: var(--entrelinha-media);
+  color: var(--cor-azul-claro);
+}
+
+.exemplo__categoria--vazia,
+.exemplo__regra--vazia {
+  color: var(--cor-apagado);
+  font-weight: var(--peso-normal);
+}
+
+@media (min-width: 768px) {
+  .exemplo {
+    grid-template-columns: minmax(0, 1.5fr) 2.5rem minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-areas: 'descricao seta categoria regra';
+    align-items: center;
+    gap: var(--esp-3);
+    padding-block: var(--esp-4);
+  }
+
+  .exemplo__seta {
+    justify-self: center;
+  }
+}
+
+/* 002 · páginas da API ----------------------------------------------------- */
+
+.paginas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+}
+
+.paginas__grade {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* O quadradinho é o tile de um <pattern>; cada coluna do SVG repete o tile (10 por página) */
+.paginas__vaga {
+  fill: var(--cor-dado);
+}
+
+.paginas__coluna {
+  cursor: pointer;
+}
+
+.paginas__anel {
+  fill: none;
+  stroke: var(--cor-selecionado);
+  stroke-width: 2px;
+  pointer-events: none;
+}
+
+.paginas__vazia {
+  fill: none;
+  stroke: var(--cor-ok);
+  stroke-width: 1px;
+  stroke-dasharray: 3 3;
+}
+
+.paginas__eixo {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--texto-micro);
+  color: var(--cor-apagado);
+}
+
+/* 003 · camadas ------------------------------------------------------------ */
+
+.camadas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-5);
+}
+
+.camada {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-3);
+  min-width: 0;
+}
+
+.camada + .camada {
+  padding-top: var(--esp-5);
+  border-top: var(--borda);
+}
+
+.camada__cabeca {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--esp-3);
+}
+
+.camada__nome {
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-forte);
+  color: var(--cor-camada-prata);
+}
+
+.camada--bronze .camada__nome {
+  color: var(--cor-camada-bronze);
+}
+
+.camada--lambda .camada__nome {
+  color: var(--cor-camada-lambda);
+}
+
+.camada--ouro .camada__nome {
+  color: var(--cor-camada-ouro);
+}
+
+.camada__formato,
+.camada__legenda {
+  font-size: var(--texto-rotulo);
+  color: var(--cor-apagado);
+}
+
+.camada__passos,
+.camada__itens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--texto-rotulo);
+  line-height: var(--entrelinha-media);
+}
+
+.camada__passos {
+  counter-reset: passo;
+}
+
+.camada__passos li {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  counter-increment: passo;
+}
+
+.camada__passos li::before {
+  content: counter(passo);
+  color: var(--cor-apagado);
+}
+
+/* Forma da tabela: só o cabeçalho tem texto; as linhas vazias mostram o formato, sem dado real */
+.forma-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-micro);
+}
+
+.forma-tabela th,
+.forma-tabela td {
+  padding: var(--esp-1) var(--esp-2);
+  border: var(--borda);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.forma-tabela th {
+  font-weight: var(--peso-medio);
+}
+
+.forma-tabela th.is-vaga {
+  font-weight: var(--peso-normal);
+  color: var(--cor-apagado);
+}
+
+.forma-tabela td {
+  height: 1.375rem;
+}
+
+@media (min-width: 1024px) {
+  .camadas {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr 1.6fr 1fr;
+    gap: var(--esp-5);
+  }
+
+  .camada + .camada {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .camada--lambda,
+  .camada--ouro {
+    padding-left: var(--esp-5);
+    border-left: var(--borda);
+  }
+}
+
+/* 004 · fita do CI --------------------------------------------------------- */
+
+.faixa-status__dia {
+  align-self: flex-start;
+  min-height: 1em;
+  font-size: var(--texto-micro);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.faixa-status__hora--forte {
+  font-weight: var(--peso-forte);
+  color: var(--cor-texto);
+}
+
+.commits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--texto-nav);
+}
+
+.commits li {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: var(--esp-3);
+}
+
+.commits__hora {
+  color: var(--cor-falha);
+}
+
+.commits__hora--ok,
+.commits__msg--ok {
+  color: var(--cor-ok);
+}
+
+/* 005 · grafo tabelas → views --------------------------------------------- */
+/* Celular: lista das views (toque mostra as tabelas). A partir de 768 px: o grafo, com as tabelas à
+   esquerda, as curvas no meio e as views à direita. Altura = a maior das duas listas; as linhas
+   dividem o espaço por igual e o SVG usa percentuais, então a conta fecha para qualquer quantidade. */
+
+.grafo {
+  display: none;
+}
+
+.grafo__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--borda);
+}
+
+.grafo__lista > li {
+  border-bottom: var(--borda);
+}
+
+.grafo__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-1);
+  width: 100%;
+  min-height: var(--alvo-toque);
+  padding: var(--esp-3);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.grafo__item.is-ativo {
+  background: var(--cor-codigo-fundo);
+}
+
+.grafo__nome {
+  font-size: var(--texto-nav);
+  font-weight: var(--peso-forte);
+  overflow-wrap: anywhere;
+}
+
+.grafo__conceito {
+  font-size: var(--texto-rotulo);
+  color: var(--cor-apagado);
+}
+
+.grafo__item.is-ativo .grafo__conceito {
+  color: var(--cor-azul-claro);
+}
+
+.grafo__usa {
+  display: none;
+  font-size: var(--texto-rotulo);
+  color: var(--cor-azul-claro);
+}
+
+.grafo__item.is-ativo .grafo__usa {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .grafo__lista {
+    display: none;
+  }
+
+  .grafo {
+    display: grid;
+    grid-template-columns: auto minmax(2rem, 1fr) auto;
+    align-items: stretch;
+    padding-block: var(--esp-2);
+  }
+
+  .grafo__tabelas,
+  .grafo__views {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .grafo__tabelas > li,
+  .grafo__views > li {
+    flex: 1 1 0;
+    display: flex;
+    min-height: 2.25rem;
+  }
+
+  .grafo__tabela {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-3);
+    width: 100%;
+    justify-content: flex-end;
+    font-size: var(--texto-rotulo);
+    color: var(--cor-apagado);
+  }
+
+  .grafo__tabela::after {
+    content: '';
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--raio-ponto);
+    background: var(--cor-apagado);
+  }
+
+  .grafo__tabela.is-ligado {
+    font-weight: var(--peso-forte);
+    color: var(--cor-texto);
+  }
+
+  .grafo__tabela.is-ligado::after {
+    background: var(--cor-azul-claro);
+  }
+
+  .grafo__curvas {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+  }
+
+  .grafo__curva {
+    fill: none;
+    stroke: var(--cor-linha);
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .grafo__curva.is-ligado {
+    stroke: var(--cor-azul-claro);
+    stroke-width: 1.5px;
+  }
+
+  .grafo__view {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--esp-3);
+    width: 100%;
+    padding: 0 var(--esp-2);
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    font-size: var(--texto-rotulo);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .grafo__view::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: var(--raio-ponto);
+    background: var(--cor-azul);
+    box-sizing: border-box;
+  }
+
+  .grafo__view.is-ativo::before {
+    width: 11px;
+    height: 11px;
+    margin: -2px;
+    background: transparent;
+    border: 2px solid var(--cor-selecionado);
+  }
+
+  .grafo__view .grafo__nome {
+    font-size: var(--texto-rotulo);
+    font-weight: var(--peso-medio);
+  }
+
+  .grafo__view.is-ativo .grafo__nome {
+    font-weight: var(--peso-forte);
+  }
+}
+
+/* 006 · endpoints ---------------------------------------------------------- */
+
+.endpoints {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--texto-nav);
+}
+
+.endpoints__cabeca {
+  display: none;
+}
+
+.endpoint {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'metodo rota'
+    'desc desc'
+    'info info';
+  gap: var(--esp-1) var(--esp-3);
+  width: 100%;
+  padding: var(--esp-3) var(--esp-2);
+  background: none;
+  border: 0;
+  border-bottom: var(--borda);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.endpoint {
+  cursor: pointer;
+}
+
+.endpoint.is-ativo,
+button.endpoint:hover {
+  background: var(--cor-codigo-fundo);
+}
+
+.endpoint .metodo {
+  grid-area: metodo;
+  min-width: 0;
+}
+
+.endpoint__rota {
+  grid-area: rota;
+  font-weight: var(--peso-medio);
+  overflow-wrap: anywhere;
+}
+
+.endpoint__desc {
+  grid-area: desc;
+  color: var(--cor-apagado);
+}
+
+.endpoint__info {
+  grid-area: info;
+  display: flex;
+  gap: var(--esp-4);
+  font-size: var(--texto-rotulo);
+  color: var(--cor-apagado);
+}
+
+.endpoint__teste {
+  color: var(--cor-ok);
+}
+
+.endpoint__teste--nao {
+  color: var(--cor-apagado);
+}
+
+@media (min-width: 768px) {
+  .endpoints__cabeca,
+  .endpoint {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr) minmax(0, 1.8fr) 5.5rem 4.5rem;
+    grid-template-areas: 'metodo rota desc resposta teste';
+    align-items: center;
+    gap: var(--esp-3);
+  }
+
+  .endpoints__cabeca {
+    padding: var(--esp-3) var(--esp-2);
+    border-bottom: var(--borda);
+    font-size: var(--texto-rotulo);
+    color: var(--cor-apagado);
+  }
+
+  .endpoint__info {
+    display: contents;
+  }
+
+  .endpoint__resposta {
+    grid-area: resposta;
+  }
+
+  .endpoint__teste {
+    grid-area: teste;
+  }
+
+  .endpoint__info {
+    font-size: var(--texto-nav);
+  }
+}
+
+/* Imagens aprovadas do projeto (galeria; a seção só existe se o .md trouxer imagem com alt) */
+
+.figura {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+  margin: 0;
+}
+
+.figura img {
+  width: 100%;
+  height: auto;
+  border: var(--borda);
+  border-radius: var(--raio-2);
+}
+
+.figura figcaption {
   font-size: var(--texto-rotulo);
   color: var(--cor-apagado);
 }

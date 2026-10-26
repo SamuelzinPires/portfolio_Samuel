@@ -1,7 +1,7 @@
 ---
 // Barra de topo: o prompt (link para a home) e o menu. O item da página atual leva aria-current.
 const caminho = Astro.url.pathname.replace(/\/+$/, '') || '/';
-const secao = caminho.split('/')[1] ?? '';
+const [, secao = '', subpagina = ''] = caminho.split('/');
 const pasta = secao ? `~/${secao}` : '~';
 
 const itens = [
@@ -14,7 +14,7 @@ const atual = (href: string) => caminho === href || caminho.startsWith(`${href}/
 
 <header class="barra">
   <a class="barra__prompt" href="/" aria-label="Samuel Pires de Miranda, página inicial">
-    <span class="barra__usuario">samuel@dados</span>:{pasta}$
+    <span class="barra__usuario">samuel@dados</span>:{pasta}{subpagina && <span class="barra__sub">/{subpagina}</span>}$
   </a>
   <nav aria-label="Principal">
     <ul class="barra__nav" role="list">

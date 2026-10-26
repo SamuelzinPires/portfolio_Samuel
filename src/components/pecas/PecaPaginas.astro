@@ -1,0 +1,110 @@
+---
+// 002 · As páginas da API enchendo a tabela até o total. Cada coluna é uma requisição de `porPagina` vagas;
+// a última vem incompleta e uma requisição vazia (tracejada) encerra o laço. O quadradinho é o tile de um
+// <pattern> do SVG: uma coluna = um retângulo que repete o tile, em vez de 643 elementos.
+import type { Dados } from '../../lib/pecas-tipos';
+import type { Projeto } from '../../lib/projetos';
+import Icone from '../Icone.astro';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'paginas'>;
+  projetos: Projeto[];
+}
+
+const { dados, projetos } = Astro.props;
+const PASSO = 11; // tile: 8 de quadrado + 3 de espaço
+const LADO = 8;
+const paginas = Math.ceil(dados.total / dados.porPagina);
+const naUltima = dados.total - (paginas - 1) * dados.porPagina;
+const alturaGrade = dados.porPagina * PASSO - (PASSO - LADO);
+const largura = (paginas + 1) * PASSO - (PASSO - LADO); // + a coluna da requisição vazia
+const selecionada = Math.min(Math.max(dados.selecionada, 1), paginas);
+const offsetDe = (n: number) => (n - 1) * dados.porPagina;
+const meta = (n: number) => `offset ${offsetDe(n)} · limit ${dados.porPagina}`;
+const colunas = Array.from({ length: paginas }, (_, i) => ({
+  n: i + 1,
+  x: i * PASSO,
+  altura: (i + 1 === paginas ? naUltima : dados.porPagina) * PASSO,
+}));
+const eixo = [0, Math.floor((paginas - 1) / 2), paginas - 1].map((i) => offsetDe(i + 1));
+
+const destino = dados.destino ? projetos.find((p) => p.id === dados.destino!.slug.id) : undefined;
+---
+
+<Peca tipo="paginas" comentario={dados.comentario} viva>
+  <div class="paginas" role="group" aria-label={`${paginas} requisições à API. Use as setas para trocar a requisição aberta.`} tabindex="0" data-teclas data-passo-h="1" data-passo-v="0">
+    <svg class="paginas__grade" viewBox={`0 0 ${largura} ${alturaGrade}`} aria-hidden="true" focusable="false">
+      <defs>
+        <pattern id="paginas-vaga" width={PASSO} height={PASSO} patternUnits="userSpaceOnUse">
+          <rect class="paginas__vaga" width={LADO} height={LADO} rx="1.5"></rect>
+        </pattern>
+      </defs>
+      {
+        colunas.map((c) => (
+          <rect
+            class="paginas__coluna"
+            x={c.x}
+            y="0"
+            width={PASSO}
+            height={c.altura}
+            fill="url(#paginas-vaga)"
+            data-item={String(c.n)}
+            data-titulo={`requisição ${c.n}`}
+            data-meta={meta(c.n)}
+            data-anel-x={c.x - 2}
+            data-anel-y="-2"
+          />
+        ))
+      }
+      <rect class="paginas__vazia" x={paginas * PASSO} y="0" width={LADO} height={alturaGrade} rx="1.5"></rect>
+      <rect
+        class="paginas__anel"
+        data-anel
+        x={(selecionada - 1) * PASSO - 2}
+        y="-2"
+        width={LADO + 4}
+        height={alturaGrade + 4}
+        rx="3"></rect>
+    </svg>
+    <div class="paginas__eixo" aria-hidden="true">
+      <span>offset {eixo[0]}</span>
+      <span>{eixo[1]}</span>
+      <span>{eixo[2]}</span>
+    </div>
+  </div>
+
+  <p class="peca__fluxo">
+    <strong>{dados.total} vagas</strong>
+    <Icone nome="seta" class="icone--texto" />
+    {dados.banco}
+    {
+      destino && dados.destino && (
+        <>
+          <Icone nome="seta" class="icone--texto" />
+          <a href={`/projetos/${destino.id}`}>
+            alimenta o {destino.numero} · {dados.destino.rotulo}
+          </a>
+        </>
+      )
+    }
+  </p>
+
+  <Fragment slot="painel">
+    <div class="seletor seletor--cabeca">
+      <button class="seletor__botao" type="button" data-passo="-1" aria-label="Requisição anterior">‹</button>
+      <span class="seletor__valor">
+        <strong class="seletor__data" data-campo="titulo">requisição {selecionada}</strong>
+        <span class="seletor__legenda" data-campo="meta">{meta(selecionada)}</span>
+      </span>
+      <button class="seletor__botao" type="button" data-passo="1" aria-label="Próxima requisição">›</button>
+    </div>
+    <pre class="codigo"><code>{dados.codigo.trimEnd()}</code></pre>
+    {dados.notaCodigo && <p class="peca__nota">{dados.notaCodigo}</p>}
+  </Fragment>
+
+  <ul class="legenda" role="list" slot="legenda">
+    <li><span class="quadrado-status quadrado-status--dado"></span>{dados.legenda.vaga}</li>
+    <li><span class="quadrado-status quadrado-status--vazio"></span>{dados.legenda.vazia}</li>
+  </ul>
+</Peca>

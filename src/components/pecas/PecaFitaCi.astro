@@ -1,0 +1,65 @@
+---
+// 004 · As execuções do CI em ordem: falhas (âmbar) até a primeira verde, os commits feitos entre elas e
+// a árvore dos testes. A história de "fazer o CI passar" fica contada sem precisar de texto.
+import type { Dados } from '../../lib/pecas-tipos';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'fita-ci'>;
+}
+
+const { dados } = Astro.props;
+const primeiraVerde = dados.execucoes.findIndex((e) => e.ok);
+---
+
+<Peca tipo="fita-ci" comentario={dados.comentario}>
+  <ol class="faixa-status" role="list">
+    {
+      dados.execucoes.map((e, i) => (
+        <li>
+          <span class="faixa-status__dia">{i === 0 || dados.execucoes[i - 1].dia !== e.dia ? e.dia : ''}</span>
+          <span
+            class:list={[
+              'quadrado-status',
+              !e.ok && 'quadrado-status--falha',
+              i === primeiraVerde && 'quadrado-status--selecionado',
+            ]}
+          ></span>
+          <span class:list={[i === primeiraVerde && 'faixa-status__hora--forte']}>{e.hora}</span>
+          <span class="sr-only">{e.ok ? 'passou' : 'falhou'}</span>
+        </li>
+      ))
+    }
+  </ol>
+
+  {
+    dados.commits.length > 0 && (
+      <div class="peca__codigo">
+        <p class="peca__nota">{dados.tituloCommits}</p>
+        <ul class="commits" role="list">
+          {dados.commits.map((c) => (
+            <li>
+              <span class:list={['commits__hora', c.ok && 'commits__hora--ok']}>{c.hora}</span>
+              <span class:list={[c.ok && 'commits__msg--ok']}>{c.mensagem}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  <Fragment slot="painel">
+    <div class="peca__cabeca">
+      <strong class="peca__titulo">{dados.testes.titulo}</strong>
+      <span class="peca__meta">{dados.testes.resumo}</span>
+    </div>
+    <pre class="codigo"><code>{dados.testes.arvore.trimEnd()}</code></pre>
+    {dados.testes.nota && <p class="peca__nota">{dados.testes.nota}</p>}
+  </Fragment>
+
+  <ul class="legenda" role="list" slot="legenda">
+    <li><span class="quadrado-status quadrado-status--falha"></span>{dados.legenda.falhou}</li>
+    <li><span class="quadrado-status"></span>{dados.legenda.passou}</li>
+    {dados.legenda.nota && <li>{dados.legenda.nota}</li>}
+  </ul>
+</Peca>

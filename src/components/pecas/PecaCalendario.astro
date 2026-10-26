@@ -1,0 +1,137 @@
+---
+// 008 · Uma execução da DAG por dia, em grade de semanas (colunas) × dias da semana (linhas), como no GitHub.
+// A grade é um SVG: passo de 18 unidades, quadrado de 14. No celular o mesmo SVG encolhe (~6 px por quadrado)
+// e o painel ganha o seletor "‹ dia ›" com botões de 44 px. A conta dos dias fica em src/lib/calendario.ts.
+//
+// Os valores de cada dia vão num atributo do quadrado (data-valores="98.14,89.91,…") e o painel tem UM bloco
+// de barras que o script reescreve ao trocar de dia: assim o HTML não carrega um painel por dia.
+// Dia sem valores mostra só o status.
+import { PASSO, LADO, montarCalendario } from '../../lib/calendario';
+import { diaMesAno } from '../../lib/datas';
+import { formatarPercentual } from '../../lib/numeros';
+import type { Dados } from '../../lib/pecas-tipos';
+import BarraDado from '../BarraDado.astro';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'calendario'>;
+}
+
+const { dados } = Astro.props;
+const { celulas, colunas, meses, nomes, nomeTotal, selecionada } = montarCalendario(dados);
+
+const linhasDeBarra = [
+  ...nomes.map((nome) => ({ nome, total: false })),
+  ...(nomeTotal ? [{ nome: nomeTotal, total: true }] : []),
+];
+const valoresAbertos = selecionada.valores;
+const execucoesOk = celulas.filter((c) => c.estado === 'ok');
+const diasVazios = celulas.filter((c) => c.estado === 'vazio').length;
+const resumo = `${execucoesOk.length} execuções com dado, de ${diaMesAno(execucoesOk[0].data)} a ${diaMesAno(execucoesOk.at(-1)!.data)}${
+  dados.falhas.length ? `; ${dados.falhas.length} falharam de propósito` : ''
+}${diasVazios ? `; ${diasVazios} dias sem dado gravado` : ''}. Use as setas do teclado para trocar o dia aberto.`;
+---
+
+<Peca tipo="calendario" comentario={dados.comentario} viva>
+  <div class="calendario" role="group" aria-label={resumo} tabindex="0" data-teclas data-passo-h="7" data-passo-v="1">
+    <div class="calendario__meses" aria-hidden="true">
+      {meses.map((nome) => <span>{nome}</span>)}
+    </div>
+    <svg
+      class="calendario__grade"
+      viewBox={`0 0 ${colunas * PASSO} ${7 * PASSO}`}
+      aria-hidden="true"
+      focusable="false"
+    >
+      {
+        celulas.map((c) => (
+          <rect
+            class:list={['calendario__dia', c.estado !== 'ok' && `calendario__dia--${c.estado}`]}
+            x={c.x}
+            y={c.y}
+            width={LADO}
+            height={LADO}
+            rx="2"
+            data-item={c.iso}
+            data-grupo={c.estado}
+            data-titulo={diaMesAno(c.data)}
+            data-motivo={c.motivo || undefined}
+            data-valores={c.valores?.join(',')}
+            data-anel-x={c.x - 2}
+            data-anel-y={c.y - 2}
+          />
+        ))
+      }
+      <rect
+        class="calendario__anel"
+        data-anel
+        x={selecionada.x - 2}
+        y={selecionada.y - 2}
+        width={LADO + 4}
+        height={LADO + 4}
+        rx="3"></rect>
+    </svg>
+  </div>
+
+  <Fragment slot="painel">
+    <div class="seletor seletor--cabeca">
+      <button class="seletor__botao" type="button" data-passo="-1" aria-label="Dia anterior">‹</button>
+      <span class="seletor__valor">
+        <strong class="seletor__data" data-campo="titulo">{diaMesAno(selecionada.data)}</strong>
+        <span class="seletor__legenda">{dados.rotuloValor}</span>
+      </span>
+      <button class="seletor__botao" type="button" data-passo="1" aria-label="Próximo dia">›</button>
+    </div>
+
+    {
+      linhasDeBarra.length > 0 && (
+        <ul class="barras" role="list" data-painel="*valores" hidden={!valoresAbertos}>
+          {linhasDeBarra.map((linha, i) => (
+            <BarraDado
+              rotulo={linha.nome}
+              valor={valoresAbertos?.[i] ?? 0}
+              numero={`${formatarPercentual(valoresAbertos?.[i] ?? 0)}%`}
+              total={linha.total}
+            />
+          ))}
+        </ul>
+      )
+    }
+    <p class="peca__estado" data-painel="*ok" hidden={Boolean(valoresAbertos) || selecionada.estado !== 'ok'}>
+      <span class="quadrado-status"></span>execução ok
+    </p>
+    <p class="peca__estado" data-painel="*falha" hidden={Boolean(valoresAbertos) || selecionada.estado !== 'falha'}>
+      <span class="quadrado-status quadrado-status--falha"></span>
+      <span data-campo="motivo">{selecionada.motivo}</span>
+    </p>
+    {
+      diasVazios > 0 && (
+        <p class="peca__estado" data-painel="*vazio" hidden={selecionada.estado !== 'vazio'}>
+          <span class="quadrado-status quadrado-status--sem-dado"></span>sem dado gravado nesse dia
+        </p>
+      )
+    }
+  </Fragment>
+
+  <ul class="legenda" role="list" slot="legenda">
+    <li><span class="quadrado-status"></span>execução ok</li>
+    <li class="legenda__so-largo">
+      <span class="quadrado-status quadrado-status--selecionado"></span>dia aberto (passe o cursor ou use as setas)
+    </li>
+    {
+      dados.falhas.length > 0 && (
+        <li>
+          {dados.falhas.map(() => (
+            <span class="quadrado-status quadrado-status--falha"></span>
+          ))}
+          {dados.legendaFalha ?? dados.falhas[0].motivo}
+        </li>
+      )
+    }
+    {
+      diasVazios > 0 && (
+        <li><span class="quadrado-status quadrado-status--sem-dado"></span>dia sem dado gravado</li>
+      )
+    }
+  </ul>
+</Peca>

@@ -7,9 +7,9 @@ const mes = (d: Date) => meses[d.getUTCMonth()];
 const ano = (d: Date) => d.getUTCFullYear();
 const dois = (n: number) => String(n).padStart(2, '0');
 
-/** "fev/2026", "fev–mar/2026", "dez/2026 – jan/2027" ou, sem `fim`, "ago/2026 → hoje". */
-export function periodo(inicio: Date, fim?: Date): string {
-  if (!fim) return `${mes(inicio)}/${ano(inicio)} → hoje`;
+/** "fev/2026", "fev–mar/2026", "dez/2026 – jan/2027" ou, sem `fim`, "ago/2026 → hoje" (o rótulo é trocável). */
+export function periodo(inicio: Date, fim?: Date, aberto = 'hoje'): string {
+  if (!fim) return `${mes(inicio)}/${ano(inicio)} → ${aberto}`;
   if (ano(inicio) !== ano(fim)) return `${mes(inicio)}/${ano(inicio)} – ${mes(fim)}/${ano(fim)}`;
   if (mes(inicio) === mes(fim)) return `${mes(inicio)}/${ano(inicio)}`;
   return `${mes(inicio)}–${mes(fim)}/${ano(inicio)}`;
@@ -17,6 +17,15 @@ export function periodo(inicio: Date, fim?: Date): string {
 
 /** "03/08" */
 export const diaMes = (d: Date) => `${dois(d.getUTCDate())}/${dois(d.getUTCMonth() + 1)}`;
+
+/** "15/09/2026" */
+export const diaMesAno = (d: Date) => `${diaMes(d)}/${ano(d)}`;
+
+/** "ago/2026" */
+export const mesAno = (d: Date) => `${mes(d)}/${ano(d)}`;
+
+/** "jan", "fev"… */
+export const nomeDoMes = (d: Date) => mes(d);
 
 /** "2026-08-03", para o atributo datetime */
 export const isoDia = (d: Date) => `${ano(d)}-${dois(d.getUTCMonth() + 1)}-${dois(d.getUTCDate())}`;

@@ -2,7 +2,10 @@
 // Página interna de conferência do sistema de design (não indexada).
 // Cores e escala de tipo são lidas do próprio tokens.css: não há valor repetido aqui.
 // A galeria (08–15) usa as classes de src/styles/componentes.css com conteúdo real dos projetos.
+import BarraDado from '../components/BarraDado.astro';
 import EmailTexto from '../components/EmailTexto.astro';
+import PecaAssinatura from '../components/pecas/PecaAssinatura.astro';
+import { carregarProjetos } from '../lib/projetos';
 import Icone from '../components/Icone.astro';
 import TextoSeta from '../components/TextoSeta.astro';
 import Base from '../layouts/Base.astro';
@@ -98,10 +101,14 @@ const endpoints = [
   { metodo: 'delete', rota: '/vagas/{id}' },
 ];
 const linhas = [
-  { num: '008', nome: 'Airflow ETL Orchestration', tipo: 'orquestração', periodo: 'ago/2026 → hoje', andamento: true, stack: 'Airflow 3 · Postgres · Pandera +3', destaque: 'backfill de 284 dias', estrela: true },
+  { num: '008', nome: 'Airflow ETL Orchestration', tipo: 'orquestração', periodo: 'ago/2026 → hoje', andamento: true, stack: 'Airflow 3 · Postgres · Pandera +3', destaque: '289 dias de dados · CI verde', estrela: true },
   { num: '007', nome: 'Data Quality Engineering', tipo: 'qualidade', periodo: 'ago/2026', stack: 'DuckDB · Pandera · Pandas +1', destaque: '6 regras · 541 mil linhas', estrela: true },
   { num: '005', nome: 'Northwind SQL Analytics', tipo: 'sql', periodo: 'jun/2026', stack: 'PostgreSQL · Docker · PgAdmin +1', destaque: '7 views de negócio', estrela: false },
 ];
+
+// Peças-assinatura: a galeria usa as peças reais dos projetos (dados do frontmatter), uma de cada tipo
+const todosProjetos = await carregarProjetos();
+const pecasDosProjetos = todosProjetos.filter((p) => p.data.peca);
 ---
 
 <Base
@@ -355,8 +362,8 @@ const linhas = [
           <p class="lead">Qual percentual da energia gerada no Brasil foi renovável, por dia e por subsistema? Uma DAG diária responde com os dados públicos do ONS.</p>
         </div>
         <dl class="numeros">
-          <div class="numero"><dt class="numero__rotulo">dias reprocessados no backfill</dt><dd class="numero__valor">284</dd></div>
-          <div class="numero"><dt class="numero__rotulo">falhas dentro do intervalo</dt><dd class="numero__valor numero__valor--ok">0</dd></div>
+          <div class="numero"><dt class="numero__rotulo">dias com dado gravado</dt><dd class="numero__valor">289</dd></div>
+          <div class="numero"><dt class="numero__rotulo">testes no CI</dt><dd class="numero__valor numero__valor--ok">9</dd></div>
         </dl>
       </div>
       <p class="rotulo-comentario">// rótulo de seção: comentário de código, 13 px, tracking aberto</p>
@@ -439,25 +446,13 @@ const linhas = [
       <h2 id="t-dados"><span class="ds-num">11</span> dados</h2>
       <p class="ds-h3">barras · 15/09/2026, % renovável</p>
       <ul class="barras" role="list">
-        {
-          renovavel.map((r) => (
-            <li class="barra-dado">
-              <span class="barra-dado__rotulo">{r.nome}</span>
-              <span class="barra-dado__trilho"><span class="barra-dado__valor" style={`--valor: ${r.valor}`} /></span>
-              <span class="barra-dado__numero">{r.valor.toLocaleString('pt-BR')}%</span>
-            </li>
-          ))
-        }
-        <li class="barra-dado barra-dado--total">
-          <span class="barra-dado__rotulo">Brasil (SIN)</span>
-          <span class="barra-dado__trilho"><span class="barra-dado__valor" style="--valor: 86.89" /></span>
-          <span class="barra-dado__numero">86,89%</span>
-        </li>
+        {renovavel.map((r) => <BarraDado rotulo={r.nome} valor={r.valor} numero={`${r.valor.toLocaleString('pt-BR')}%`} />)}
+        <BarraDado rotulo="Brasil (SIN)" valor={86.89} numero="86,89%" total />
       </ul>
       <p class="ds-h3">barras de falha · parte das 541.909 linhas</p>
-      <ul class="barras" role="list" style="--barra-rotulo: 15rem; --barra-trilho: 22rem">
-        <li class="barra-dado barra-dado--falha"><span class="barra-dado__rotulo">CustomerID não nulo</span><span class="barra-dado__trilho barra-dado__trilho--fundo"><span class="barra-dado__valor" style="--valor: 24.93" /></span><span class="barra-dado__numero">135.080</span></li>
-        <li class="barra-dado barra-dado--falha"><span class="barra-dado__rotulo">Quantity ≥ 0</span><span class="barra-dado__trilho barra-dado__trilho--fundo"><span class="barra-dado__valor" style="--valor: 1.96" /></span><span class="barra-dado__numero">10.624</span></li>
+      <ul class="barras barras--larga" role="list">
+        <BarraDado rotulo="CustomerID não nulo" valor={24.93} numero="135.080" tom="falha" fundo />
+        <BarraDado rotulo="Quantity ≥ 0" valor={1.96} numero="10.624" tom="falha" fundo />
       </ul>
       <p class="ds-h3">quadrados de status · as 13 execuções do CI</p>
       <ol class="faixa-status" role="list">
@@ -622,8 +617,43 @@ const linhas = [
         <li class="cursor--link"><span class="ds-cursor-demo"><span class="cursor__anel"></span></span>sobre link</li>
       </ul>
     </section>
+
+    <section class="ds-secao" aria-labelledby="t-pecas">
+      <h2 id="t-pecas"><span class="ds-num">17</span> peças-assinatura</h2>
+      <p class="ds-apagado">
+        Cada projeto tem uma peça feita dos dados reais do frontmatter (<code class="ds-codigo-inline">peca: &#123; tipo, dados &#125;</code>).
+        Base comum <code class="ds-codigo-inline">.peca</code>: linha “// …”, visual, painel de detalhe e legenda. O painel só fica ao
+        lado a partir de 1280 px; abaixo disso ele desce e a peça usa a largura toda. Passe o cursor (ou toque, ou use as setas
+        nas grades) para trocar o item aberto. Abaixo, as 8 peças reais; tipo novo = componente em
+        <code class="ds-codigo-inline">src/components/pecas/</code> + tipo no schema + uma peça aqui.
+      </p>
+      {
+        pecasDosProjetos.map((p) => (
+          <div class="ds-grupo">
+            <p class="ds-h3">{p.data.peca!.tipo} · {p.numero} {p.data.titulo}</p>
+            <PecaAssinatura peca={p.data.peca!} projetos={todosProjetos} />
+          </div>
+        ))
+      }
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-figura">
+      <h2 id="t-figura"><span class="ds-num">18</span> imagem do projeto</h2>
+      <p class="ds-apagado">
+        <code class="ds-codigo-inline">.figura</code>: só entra imagem aprovada pelo Samuel (FinOps com dados fictícios, AWS sem ID de conta nem ARN), com
+        <code class="ds-codigo-inline">alt</code> obrigatório no schema. A seção “Imagens” só existe se o .md trouxer imagem. Exemplo com o cartão de compartilhamento.
+      </p>
+      <figure class="figura">
+        <img src="/og/padrao.png" width="1200" height="630" alt="Cartão do portfólio: nome, cargo e resumo em fundo escuro" />
+        <figcaption>Legenda opcional da imagem, em texto apagado.</figcaption>
+      </figure>
+    </section>
   </main>
 </Base>
+
+<script>
+  import '../scripts/pecas';
+</script>
 
 <style>
   .ds-topo {

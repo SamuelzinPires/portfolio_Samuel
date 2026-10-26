@@ -1,0 +1,58 @@
+---
+// 007 · Violações por regra. O trilho de cada barra é o total de linhas da base, então o comprimento
+// da barra é a parte da base que viola a regra (a % sai da conta, não de um número digitado).
+// Passar o cursor (ou tocar) numa regra abre os números e o detalhe dela ao lado.
+import { formatarNumero, formatarPercentual } from '../../lib/numeros';
+import type { Dados } from '../../lib/pecas-tipos';
+import BarraDado from '../BarraDado.astro';
+import Peca from './Peca.astro';
+
+interface Props {
+  dados: Dados<'barras'>;
+}
+
+const { dados } = Astro.props;
+const parte = (n: number) => (n / dados.total) * 100;
+---
+
+<Peca tipo="barras" comentario={dados.comentario} viva>
+  <ul class="barras barras--larga barras--marcador barras--empilhar" role="list">
+    {
+      dados.regras.map((r, i) => (
+        <BarraDado
+          rotulo={r.regra}
+          valor={parte(r.violacoes)}
+          numero={formatarNumero(r.violacoes)}
+          tom="falha"
+          fundo
+          item={String(i)}
+          ativo={i === 0}
+        />
+      ))
+    }
+  </ul>
+
+  <Fragment slot="painel">
+    {
+      dados.regras.map((r, i) => (
+        <div class="peca__painel-item" data-painel={String(i)} hidden={i !== 0}>
+          <strong class="peca__titulo">{r.regra}</strong>
+          <p class="peca__meta">
+            {formatarNumero(r.violacoes)} linhas · {formatarPercentual(parte(r.violacoes))}% da base
+          </p>
+          {r.detalhe && <p class="peca__texto">{r.detalhe}</p>}
+        </div>
+      ))
+    }
+    {dados.codigo && <pre class="codigo"><code>{dados.codigo.trimEnd()}</code></pre>}
+  </Fragment>
+
+  {
+    dados.legenda.length > 0 && (
+      <ul class="legenda" role="list" slot="legenda">
+        <li><span class="quadrado-status quadrado-status--falha"></span>{dados.legenda[0]}</li>
+        {dados.legenda.slice(1).map((l) => <li>{l}</li>)}
+      </ul>
+    )
+  }
+</Peca>
