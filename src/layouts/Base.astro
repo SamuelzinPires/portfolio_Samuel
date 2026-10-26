@@ -1,6 +1,7 @@
 ---
 // Layout comum: fonte hospedada no próprio site, tokens e estilos base, navegação com View Transitions
 // (ClientRouter do Astro), rolagem suave e cursor. Sem JavaScript o site é HTML comum, sem nada quebrado.
+// Open Graph (a prévia no LinkedIn e no WhatsApp): título, descrição e imagem de cada página.
 import { ClientRouter } from 'astro:transitions';
 import '@fontsource-variable/jetbrains-mono';
 import 'lenis/dist/lenis.css';
@@ -14,9 +15,17 @@ interface Props {
   titulo: string;
   descricao: string;
   noindex?: boolean;
+  /** Imagem de compartilhamento, caminho a partir da raiz (ex.: "/og/padrao.png"). */
+  imagem?: string;
+  tipoOg?: 'website' | 'article';
 }
 
-const { titulo, descricao, noindex = false } = Astro.props;
+const { titulo, descricao, noindex = false, imagem = '/og/padrao.png', tipoOg = 'website' } = Astro.props;
+
+// O Open Graph precisa de endereço completo (https://…): vem do `site` do astro.config.mjs
+const absoluta = (caminho: string) => (Astro.site ? new URL(caminho, Astro.site).href : undefined);
+const url = absoluta(Astro.url.pathname);
+const imagemAbsoluta = absoluta(imagem);
 ---
 
 <!doctype html>
@@ -28,6 +37,23 @@ const { titulo, descricao, noindex = false } = Astro.props;
     <meta name="description" content={descricao} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#0D1117" />
+    {
+      !noindex && (
+        <>
+          <meta property="og:title" content={titulo} />
+          <meta property="og:description" content={descricao} />
+          <meta property="og:type" content={tipoOg} />
+          <meta property="og:locale" content="pt_BR" />
+          <meta property="og:site_name" content="Samuel Pires de Miranda" />
+          {url && <meta property="og:url" content={url} />}
+          {imagemAbsoluta && <meta property="og:image" content={imagemAbsoluta} />}
+          {imagemAbsoluta && <meta property="og:image:width" content="1200" />}
+          {imagemAbsoluta && <meta property="og:image:height" content="630" />}
+          {imagemAbsoluta && <meta property="og:image:alt" content={`Cartão de ${titulo}`} />}
+          <meta name="twitter:card" content="summary_large_image" />
+        </>
+      )
+    }
     <link rel="preload" href={fonteLatina} as="font" type="font/woff2" crossorigin />
     <ClientRouter />
   </head>

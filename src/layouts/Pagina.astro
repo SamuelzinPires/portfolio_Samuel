@@ -9,6 +9,9 @@ interface Props {
   titulo: string;
   descricao: string;
   noindex?: boolean;
+  /** Imagem de compartilhamento (Open Graph), caminho a partir da raiz do site. */
+  imagem?: string;
+  tipoOg?: 'website' | 'article';
 }
 ---
 
