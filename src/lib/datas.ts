@@ -18,6 +18,9 @@ export function periodo(inicio: Date, fim?: Date, aberto = 'hoje'): string {
 /** "03/08" */
 export const diaMes = (d: Date) => `${dois(d.getUTCDate())}/${dois(d.getUTCMonth() + 1)}`;
 
+/** "07 ago" (rótulo do certificado e do eixo da cronologia) */
+export const diaMesNome = (d: Date) => `${dois(d.getUTCDate())} ${mes(d)}`;
+
 /** "15/09/2026" */
 export const diaMesAno = (d: Date) => `${diaMes(d)}/${ano(d)}`;
 

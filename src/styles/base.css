@@ -82,6 +82,11 @@ a:hover {
   color: var(--cor-texto);
 }
 
+/* O atributo `hidden` vale mais que o `display` das classes (filtro e "ver todos" dos certificados, botão "copiar") */
+[hidden] {
+  display: none !important;
+}
+
 /* Texto lido por leitor de tela, invisível na tela */
 .sr-only {
   position: absolute;

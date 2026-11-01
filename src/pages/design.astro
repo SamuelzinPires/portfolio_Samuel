@@ -3,8 +3,11 @@
 // Cores e escala de tipo são lidas do próprio tokens.css: não há valor repetido aqui.
 // A galeria (08–15) usa as classes de src/styles/componentes.css com conteúdo real dos projetos.
 import BarraDado from '../components/BarraDado.astro';
+import Cronologia from '../components/certificados/Cronologia.astro';
+import ContatoDag from '../components/contato/ContatoDag.astro';
 import EmailTexto from '../components/EmailTexto.astro';
 import PecaAssinatura from '../components/pecas/PecaAssinatura.astro';
+import { carregarCertificados, montarCertificados } from '../lib/certificados';
 import { carregarProjetos } from '../lib/projetos';
 import Icone from '../components/Icone.astro';
 import TextoSeta from '../components/TextoSeta.astro';
@@ -109,6 +112,22 @@ const linhas = [
 // Peças-assinatura: a galeria usa as peças reais dos projetos (dados do frontmatter), uma de cada tipo
 const todosProjetos = await carregarProjetos();
 const pecasDosProjetos = todosProjetos.filter((p) => p.data.peca);
+
+// Certificações: a galeria usa os certificados reais. Para ver o filtro e o "ver todos" (que só aparecem com
+// muitos certificados) há um exemplo de escala só no `npm run dev`, com certificados de teste que nunca vão ao ar.
+const certificadosReais = await carregarCertificados();
+const dadosDeTeste = import.meta.env.DEV
+  ? montarCertificados(
+      Array.from({ length: 16 }, (_, i) => ({
+        id: `teste-${i + 1}`,
+        titulo: `Certificado de teste ${i + 1}`,
+        emissor: i % 4 === 3 ? 'Outro emissor' : 'DataCamp',
+        trilha: (['linguagem', 'dados', 'conceitos'] as const)[i % 3],
+        conclusao: new Date(Date.UTC(2026, 7 + Math.floor(i / 2), 3 + (i % 2) * 5)),
+        ...(i === 2 ? { urlVerificacao: 'https://example.com/verificar' } : {}),
+      })),
+    )
+  : [];
 ---
 
 <Base
@@ -593,7 +612,7 @@ const pecasDosProjetos = todosProjetos.filter((p) => p.data.peca);
 
     <section class="ds-secao" aria-labelledby="t-paginas">
       <h2 id="t-paginas"><span class="ds-num">16</span> páginas internas e erro</h2>
-      <p class="ds-apagado">Topo de /projetos, /certificações e /contato (o texto de apoio só aparece a partir de 768 px), legenda da lista e o nível de erro do log (404).</p>
+      <p class="ds-apagado">Topo de /projetos, /certificações e /contato (o texto de apoio só aparece a partir de 768 px, menos em certificações e contato, que o mostram no celular com <code class="ds-codigo-inline">cabeca-pagina__lead--sempre</code>; os números do topo de certificações só a partir de 1024 px), legenda da lista e o nível de erro do log (404).</p>
       <header class="cabeca-pagina">
         <p class="consulta" aria-hidden="true">
           <span class="consulta__prompt">&gt;</span>
@@ -648,11 +667,61 @@ const pecasDosProjetos = todosProjetos.filter((p) => p.data.peca);
         <figcaption>Legenda opcional da imagem, em texto apagado.</figcaption>
       </figure>
     </section>
+
+    <section class="ds-secao" aria-labelledby="t-cronologia">
+      <h2 id="t-cronologia"><span class="ds-num">19</span> certificações: cronologia por trilhas</h2>
+      <p class="ds-apagado">
+        Os mesmos dados saem em duas versões: o quadro de raias a partir de 1024 px (<code class="ds-codigo-inline">.raia</code>,
+        <code class="ds-codigo-inline">.celula</code>, <code class="ds-codigo-inline">.eixo</code>) e a lista por trilha abaixo disso
+        (<code class="ds-codigo-inline">.trilha</code>, por ano quando há mais de um). Eixo ordinal: cada certificado é uma coluna, na ordem de
+        conclusão (empate: campo <code class="ds-codigo-inline">ordem</code>, depois o título). Linha azul liga os certificados da mesma raia;
+        a pontilhada desce até a data. Mais colunas do que cabem: o quadro rola para o lado e a borda esmaece. Sem PDF; “verificar” só
+        existe com <code class="ds-codigo-inline">urlVerificacao</code>, e sem link o cartão não é clicável.
+      </p>
+      <Cronologia certificados={certificadosReais} />
+      <div class="ds-grupo">
+        <p class="ds-h3">controles de escala (só com JavaScript e só com muitos certificados ou mais de um emissor)</p>
+        <div class="filtros">
+          <div class="filtro" role="group" aria-label="Filtrar por trilha">
+            <span class="filtro__rotulo">trilha</span>
+            <button type="button" class="filtro__botao" aria-pressed="true">todas</button>
+            <button type="button" class="filtro__botao" aria-pressed="false">linguagem</button>
+            <button type="button" class="filtro__botao" aria-pressed="false">dados</button>
+            <button type="button" class="filtro__botao" aria-pressed="false">conceitos</button>
+          </div>
+        </div>
+        <button type="button" class="ver-todos">ver todos (6)</button>
+        <p class="dica-rolagem">role para o lado: os mais recentes estão à direita</p>
+      </div>
+      {
+        dadosDeTeste.length > 0 && (
+          <div class="ds-grupo">
+            <p class="ds-h3">escala: 16 certificados de teste, 2 anos e 2 emissores (só no npm run dev; nunca vai ao ar)</p>
+            <Cronologia certificados={dadosDeTeste} />
+          </div>
+        )
+      }
+    </section>
+
+    <section class="ds-secao" aria-labelledby="t-dag">
+      <h2 id="t-dag"><span class="ds-num">20</span> contato em DAG (K3)</h2>
+      <p class="ds-apagado">
+        Você → canal → Samuel. Desktop: três colunas com curvas em SVG; celular e tablet: coluna única com trilhos verticais
+        (<code class="ds-codigo-inline">.dag-contato</code>, <code class="ds-codigo-inline">.dag-no</code>,
+        <code class="ds-codigo-inline">.dag-linha</code>). O caminho do canal sob o mouse, o foco ou o toque acende
+        (<code class="ds-codigo-inline">.is-ativo</code>, <code class="ds-codigo-inline">.is-antes</code>,
+        <code class="ds-codigo-inline">.is-depois</code>); sem JavaScript o e-mail fica aceso e o “copiar” não aparece. LinkedIn e GitHub:
+        o cartão inteiro é o link. “escrever” e “copiar” têm 44 px de altura.
+      </p>
+      <ContatoDag />
+    </section>
   </main>
 </Base>
 
 <script>
   import '../scripts/pecas';
+  import '../scripts/certificados';
+  import '../scripts/contato';
 </script>
 
 <style>
@@ -732,6 +801,11 @@ const pecasDosProjetos = todosProjetos.filter((p) => p.data.peca);
 
   .ds-secao:last-of-type {
     padding-bottom: var(--esp-secao);
+  }
+
+  /* um bloco largo (o quadro de certificações rola para o lado) não estica a coluna da grade */
+  .ds-secao > * {
+    min-width: 0;
   }
 
   .ds-num {

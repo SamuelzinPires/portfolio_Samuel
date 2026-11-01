@@ -237,6 +237,7 @@ const certificados = defineCollection({
     trilha: z.enum(['linguagem', 'dados', 'conceitos']),
     conclusao: z.coerce.date(),
     urlVerificacao: z.url().optional(),
+    ordem: z.number().int().optional(), // desempate quando a data é igual; sem ele, desempata pelo título
   }),
 });
 

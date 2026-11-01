@@ -1,0 +1,62 @@
+---
+// Seção "certificações": o quadro de raias (desktop) e a lista por trilha (celular) saem dos mesmos dados.
+// Os controles (filtro por trilha/emissor e "ver todos") só existem para quem tem JavaScript e só quando há
+// certificado de sobra: com poucos, a página mostra tudo e não tem botão que não faz nada.
+import { LIMITE_RAIA, agruparPorAno, agruparPorTrilha, resumir, type Certificado } from '../../lib/certificados';
+import CronologiaLista from './CronologiaLista.astro';
+import CronologiaQuadro from './CronologiaQuadro.astro';
+
+interface Props {
+  certificados: Certificado[];
+}
+
+const { certificados } = Astro.props;
+const resumo = resumir(certificados);
+const raias = agruparPorTrilha(certificados);
+---
+
+<section
+  class="cronologia"
+  data-cronologia
+  data-limite={LIMITE_RAIA}
+  data-total={certificados.length}
+  aria-label="Certificados por trilha"
+>
+  {
+    resumo.comFiltro && (
+      <div class="filtros" data-filtros hidden>
+        <div class="filtro" role="group" aria-label="Filtrar por trilha">
+          <span class="filtro__rotulo" aria-hidden="true">
+            trilha
+          </span>
+          <button type="button" class="filtro__botao" data-filtro="trilha" data-valor="todas" aria-pressed="true">
+            todas
+          </button>
+          {raias.map((r) => (
+            <button type="button" class="filtro__botao" data-filtro="trilha" data-valor={r.id} aria-pressed="false">
+              {r.nome.toLowerCase()}
+            </button>
+          ))}
+        </div>
+        {resumo.emissores.length > 1 && (
+          <div class="filtro" role="group" aria-label="Filtrar por emissor">
+            <span class="filtro__rotulo" aria-hidden="true">
+              emissor
+            </span>
+            <button type="button" class="filtro__botao" data-filtro="emissor" data-valor="todos" aria-pressed="true">
+              todos
+            </button>
+            {resumo.emissores.map((e) => (
+              <button type="button" class="filtro__botao" data-filtro="emissor" data-valor={e} aria-pressed="false">
+                {e}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+  <p class="sr-only" role="status" data-status></p>
+  <CronologiaQuadro certificados={certificados} raias={raias} variosMeses={resumo.variosMeses} />
+  <CronologiaLista grupos={agruparPorAno(certificados)} variosAnos={resumo.variosAnos} />
+</section>

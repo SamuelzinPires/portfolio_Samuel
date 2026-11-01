@@ -1,0 +1,101 @@
+---
+// Contato como pipeline (K3): você → canal → Samuel. Cada canal é uma "tarefa" da DAG; o caminho do canal
+// escolhido (o que está com o mouse, o foco ou o toque) acende. Sem formulário, sem telefone e sem cookies.
+// Desktop: três colunas com curvas em SVG. Celular e tablet (até 1023 px): coluna única com linhas verticais.
+// O e-mail sai em entidades HTML (EmailTexto/LinkEmail) e o botão "copiar" só existe com JavaScript.
+import { site } from '../../data/site';
+import EmailTexto from '../EmailTexto.astro';
+import Icone from '../Icone.astro';
+import LinkEmail from '../LinkEmail.astro';
+
+const canais = [
+  { id: 'email', nome: 'e-mail' },
+  { id: 'linkedin', nome: 'LinkedIn', url: site.linkedin, endereco: new URL(site.linkedin).pathname.replace(/\/$/, '') },
+  { id: 'github', nome: 'GitHub', url: site.github, endereco: new URL(site.github).pathname },
+] as const;
+
+// Os fios ocupam um quadro de 100 × 300: os canais ficam no meio de cada terço (y = 50, 150, 250)
+// e "você" e "Samuel" no meio de tudo (y = 150). O SVG estica até a altura da coluna dos canais.
+const yDoCanal = [50, 150, 250];
+const entrada = (i: number) => `M0 150 C 50 150, 50 ${yDoCanal[i]}, 100 ${yDoCanal[i]}`;
+const saida = (i: number) => `M0 ${yDoCanal[i]} C 50 ${yDoCanal[i]}, 50 150, 100 150`;
+
+// estado de cada elemento em relação ao canal aberto (o e-mail abre primeiro)
+const estado = (i: number) => (i === 0 ? 'is-ativo' : 'is-depois');
+// no SVG quem vem depois pinta por cima: o fio do e-mail (aceso ao carregar) é o último
+const fios = canais.map((c, i) => ({ c, i })).reverse();
+---
+
+<div class="dag-contato" data-contato data-ativo="email">
+  <p class="dag-contato__etapa dag-contato__etapa--disparo" aria-hidden="true">01 · DISPARO</p>
+  <p class="dag-contato__etapa dag-contato__etapa--canal" aria-hidden="true">02 · CANAL</p>
+  <p class="dag-contato__etapa dag-contato__etapa--chegada" aria-hidden="true">03 · CHEGADA</p>
+
+  <div class="dag-no dag-no--voce" aria-hidden="true">
+    <span class="dag-no__nome"><span class="dag-no__ponto dag-no__ponto--ok"></span>você</span>
+    <span class="dag-no__sub">visitante</span>
+  </div>
+
+  <div class="dag-fios dag-fios--entrada" aria-hidden="true">
+    <svg viewBox="0 0 100 300" preserveAspectRatio="none">
+      {fios.map(({ c, i }) => <path class:list={['dag-fio', estado(i)]} data-canal={c.id} data-ordem={i} d={entrada(i)} />)}
+    </svg>
+    {canais.map((c, i) => <span class:list={['dag-marca', estado(i)]} data-canal={c.id} data-ordem={i} />)}
+  </div>
+
+  <ul class="dag-contato__canais" role="list">
+    <li class:list={['dag-linha', estado(0)]} data-canal="email" data-ordem="0">
+      <div class="canal canal--ativo" data-cartao>
+        <span class="canal__nome">e-mail</span>
+        <span class="canal__endereco"><EmailTexto /></span>
+        <div class="canal__acoes">
+          <LinkEmail class="botao botao--primario">
+            escrever<span class="sr-only"> e-mail para Samuel</span><Icone nome="seta" />
+          </LinkEmail>
+          <button type="button" class="botao botao--secundario canal__copiar" data-copiar hidden>copiar</button>
+        </div>
+        <span class="sr-only" role="status" data-copiar-status></span>
+      </div>
+    </li>
+    {
+      canais.slice(1).map((c, i) => (
+        <li class:list={['dag-linha', estado(i + 1)]} data-canal={c.id} data-ordem={i + 1}>
+          <a class="canal" href={'url' in c ? c.url : undefined} target="_blank" rel="noopener noreferrer" data-cartao>
+            <span class="canal__topo">
+              <span class="canal__nome">{c.nome}</span>
+              <span class="canal__abrir">
+                abrir <Icone nome="externo" />
+              </span>
+            </span>
+            <span class="canal__endereco">{'endereco' in c ? c.endereco : ''}</span>
+            <span class="sr-only">(abre em nova aba)</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="dag-fios dag-fios--saida" aria-hidden="true">
+    <svg viewBox="0 0 100 300" preserveAspectRatio="none">
+      {fios.map(({ c, i }) => <path class:list={['dag-fio', estado(i)]} data-canal={c.id} data-ordem={i} d={saida(i)} />)}
+    </svg>
+    {canais.map((c, i) => <span class:list={['dag-marca', estado(i)]} data-canal={c.id} data-ordem={i} />)}
+  </div>
+
+  <div class="dag-no dag-no--samuel" aria-hidden="true">
+    <span class="dag-no__nome"><span class="dag-no__ponto"></span>Samuel</span>
+    <span class="dag-no__sub">Goiânia, GO</span>
+  </div>
+
+  <ul class="legenda dag-contato__legenda" role="list" aria-hidden="true">
+    <li><span class="legenda__linha"></span>caminho escolhido</li>
+    <li><span class="legenda__linha legenda__linha--apagada"></span>outros canais</li>
+    <li><span class="dag-no__ponto dag-no__ponto--ok"></span>pronto para disparar</li>
+    <li class="dag-contato__trigger">trigger: manual (clique ou toque)</li>
+  </ul>
+
+  <p class="dag-contato__rodape">
+    <span>DAG contato · 3 tarefas</span>
+    <span>sem formulário · sem cookies</span>
+  </p>
+</div>

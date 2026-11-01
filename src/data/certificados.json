@@ -54,5 +54,26 @@
     "emissor": "DataCamp",
     "trilha": "dados",
     "conclusao": "2026-10-20"
+  },
+  {
+    "id": "data-warehousing-concepts",
+    "titulo": "Data Warehousing Concepts",
+    "emissor": "DataCamp",
+    "trilha": "conceitos",
+    "conclusao": "2026-10-27"
+  },
+  {
+    "id": "postgresql-summary-stats-and-window-functions",
+    "titulo": "PostgreSQL Summary Stats and Window Functions",
+    "emissor": "DataCamp",
+    "trilha": "linguagem",
+    "conclusao": "2026-10-29"
+  },
+  {
+    "id": "streaming-concepts",
+    "titulo": "Streaming Concepts",
+    "emissor": "DataCamp",
+    "trilha": "conceitos",
+    "conclusao": "2026-10-29"
   }
 ]

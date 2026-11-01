@@ -1,0 +1,61 @@
+---
+// Cronologia dos certificados no celular e no tablet (até 1023 px): lista por trilha, e por ano quando os
+// certificados são de mais de um ano. Cada item é um ponto numa linha vertical azul (classe .trilha).
+import type { GrupoDoAno } from '../../lib/certificados';
+import { isoDia } from '../../lib/datas';
+import Icone from '../Icone.astro';
+
+interface Props {
+  grupos: GrupoDoAno[];
+  variosAnos: boolean;
+}
+
+const { grupos, variosAnos } = Astro.props;
+// com título por ano, o título da raia desce um nível (h1 > h2 ano > h3 raia)
+const TituloRaia = variosAnos ? 'h3' : 'h2';
+---
+
+<div class="lista-cronologia" data-lista>
+  {
+    grupos.map((g) => (
+      <section class="lista-ano" data-ano>
+        {variosAnos && <h2 class="lista-ano__titulo">{g.ano}</h2>}
+        {g.raias.map((raia) => (
+          <section class="raia-lista" data-raia={raia.id} data-grupo>
+            <header class="raia-lista__cabeca">
+              <TituloRaia class="raia-titulo">
+                {raia.numero} · {raia.nome}
+              </TituloRaia>
+              <span class="raia-lista__contagem" aria-label={`${raia.certificados.length} certificados`}>
+                {raia.certificados.length}
+              </span>
+            </header>
+            <ol class="trilha" role="list">
+              {raia.certificados.map((c) => (
+                <li class="trilha-item" data-cert={c.id} data-trilha={c.trilha} data-emissor={c.emissor}>
+                  <time class="trilha-item__data" datetime={isoDia(c.conclusao)}>
+                    {c.rotulo}
+                  </time>
+                  <span class="trilha-item__corpo">
+                    <span class="trilha-item__titulo">{c.titulo}</span>
+                    <span class="trilha-item__emissor">{c.emissor}</span>
+                    {c.urlVerificacao && (
+                      <a class="link-externo" href={c.urlVerificacao} target="_blank" rel="noopener noreferrer">
+                        verificar
+                        <Icone nome="externo" />
+                        <span class="sr-only">(abre em nova aba)</span>
+                      </a>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <button type="button" class="ver-todos" data-ver-todos hidden>
+              ver todos ({raia.certificados.length})
+            </button>
+          </section>
+        ))}
+      </section>
+    ))
+  }
+</div>
