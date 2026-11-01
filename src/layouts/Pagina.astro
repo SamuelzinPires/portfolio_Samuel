@@ -12,6 +12,8 @@ interface Props {
   /** Imagem de compartilhamento (Open Graph), caminho a partir da raiz do site. */
   imagem?: string;
   tipoOg?: 'website' | 'article';
+  /** false quando a página não usa Inter Tight (ver Base.astro). */
+  fonteTitulo?: boolean;
 }
 ---
 

@@ -43,14 +43,19 @@ h3 {
   font-weight: var(--peso-display);
 }
 
+/* h1 e h2 são os títulos que o visitante lê como conteúdo: Inter Tight. O nome do A2 (.hero-nome) é a linha
+   digitada do terminal e volta para a mono. h3 e o resto ficam em mono. */
 h1 {
-  font-size: var(--texto-titulo);
-  line-height: var(--entrelinha-titulo);
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-titulo-pagina);
+  line-height: var(--entrelinha-titulo-pagina);
   letter-spacing: var(--tracking-titulo);
 }
 
 h2 {
+  font-family: var(--fonte-titulo);
   font-size: var(--texto-secao);
+  font-weight: var(--peso-forte);
 }
 
 img,
@@ -137,7 +142,7 @@ a:hover {
   min-height: var(--alvo-toque); /* alvo de toque confortável no celular */
   padding: var(--esp-2) var(--esp-5);
   border: 1px solid transparent;
-  border-radius: var(--raio-2);
+  border-radius: var(--raio-botao);
   font: inherit;
   font-size: var(--texto-nav);
   font-weight: var(--peso-medio);

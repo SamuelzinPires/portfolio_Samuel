@@ -34,6 +34,7 @@ const cores = [...tokensCss.matchAll(/--cor-([\w-]+):\s*(#[0-9A-Fa-f]{6});/g)].m
 const hexDe = (nome: string) => cores.find((c) => c.nome === nome)?.hex ?? '#000000';
 const fundo = hexDe('fundo');
 const painel = hexDe('painel');
+const azul = hexDe('azul');
 
 const usos: Record<string, string> = {
   fundo: 'fundo da página',
@@ -45,7 +46,11 @@ const usos: Record<string, string> = {
   'azul-claro': 'links, texto azul, foco, botão',
   verde: 'OK, sucesso, em andamento',
   ambar: 'WARN, falha, destaque ★',
+  branco: 'só texto sobre o azul (cartão azul do destaque); única cor fora da paleta fechada',
 };
+
+// Razões de contraste citadas nos textos das seções (calculadas aqui, nunca digitadas)
+const razao = (a: string, b: string) => contraste(hexDe(a), hexDe(b)).toFixed(2).replace('.', ',');
 
 const nota = (r: number) => (r >= 4.5 ? 'AA texto' : r >= 3 ? 'só grande/gráfico' : 'decorativo');
 
@@ -65,15 +70,27 @@ const pares = [
   { texto: 'ambar', fundo: 'painel', onde: '★ destaque no painel do celular' },
   { texto: 'verde', fundo: 'fundo', onde: 'ok, em andamento, POST' },
   { texto: 'fundo', fundo: 'azul-claro', onde: 'botão primário, alternador ativo' },
+  { texto: 'branco', fundo: 'azul', onde: 'cartão azul do destaque (papel --cor-texto-sobre-azul)' },
+  { texto: 'texto', fundo: 'azul', onde: 'reprovado: por isso o cartão azul usa o branco e não o texto da página' },
 ].map((p) => ({ ...p, razao: contraste(hexDe(p.texto), hexDe(p.fundo)) }));
 
 const escala = [
-  ...tokensCss.matchAll(/--texto-(\w+):[^;]+;\s*\/\*\s*(\d+) → (\d+) px(?:\s*·\s*([^*]+?))?\s*\*\//g),
+  ...tokensCss.matchAll(/--texto-([\w-]+):[^;]+;\s*\/\*\s*(\d+) → (\d+) px(?:\s*·\s*([^*]+?))?\s*\*\//g),
 ].map(([, nome, min, max, uso]) => ({ nome, min, max, uso: uso ?? '' }));
 
 const espacos = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 const espacosFluidos = ['secao', 'secao-topo', 'secao-base', 'gap-colunas'];
-const raios = ['1', '2', '3', 'painel', 'pilula'];
+// Raios: valor e "onde usa" saem do próprio tokens.css (o comentário de cada linha), sem repetir aqui
+const raios = [...tokensCss.matchAll(/--(raio-[\w-]+):\s*([^;]+);\s*\/\*\s*([^*]+?)\s*\*\//g)].map(([, token, valor, onde]) => ({
+  token,
+  valor: valor.replace(/(\d)px/, '$1 px').replace('%', ' %'),
+  onde,
+}));
+// Fontes: quais papéis usam cada família, para o quadro da seção 02
+const fontesTitulo = ['h1 de página', 'h2 de seção', 'título de projeto e de cartão', 'painel fixo do celular'];
+const fontesMono = ['prompt e menu', 'rótulos, datas e períodos', 'stack, chamada e código', 'números grandes do topo', 'corpo de texto', 'nome na home (a linha digitada do terminal)'];
+// Amostra de cada tamanho da escala: os de título usam Inter Tight
+const classeTipo: Record<string, string> = { 'titulo-pagina': 'ds-tipo--h1', secao: 'ds-tipo--h2', cartao: 'ds-tipo--cartao' };
 const movimentos = [
   { token: 'dur-media', ease: 'ease-padrao', rotulo: 'interface' },
   { token: 'dur-a0-caos', ease: 'ease-caos', rotulo: 'A0 · caos' },
@@ -166,7 +183,15 @@ const dadosDeTeste = import.meta.env.DEV
                 <div>
                   <p class="ds-cor-nome">--cor-{c.nome}</p>
                   <p class="ds-apagado">{c.hex} · {usos[c.nome]}</p>
-                  {c.nome !== 'fundo' && c.nome !== 'painel' && (
+                  {c.nome === 'branco' && (
+                    <p class="ds-contraste">
+                      <span>sobre o azul {contraste(c.hex, azul).toFixed(2)}:1</span>
+                      <span class:list={['ds-selo', contraste(c.hex, azul) >= 4.5 ? 'ds-selo--ok' : 'ds-selo--aviso']}>
+                        {nota(contraste(c.hex, azul))}
+                      </span>
+                    </p>
+                  )}
+                  {c.nome !== 'fundo' && c.nome !== 'painel' && c.nome !== 'branco' && (
                     <p class="ds-contraste">
                       <span>fundo {rf.toFixed(2)}:1</span>
                       <span>painel {rp.toFixed(2)}:1</span>
@@ -219,7 +244,28 @@ const dadosDeTeste = import.meta.env.DEV
 
     <section class="ds-secao" aria-labelledby="t-tipo">
       <h2 id="t-tipo"><span class="ds-num">02</span> tipografia</h2>
-      <p class="ds-apagado">JetBrains Mono Variable, hospedada no site. Tamanhos por papel; os fluidos crescem de 390 a 1440 px.</p>
+      <p class="ds-apagado">
+        Duas fontes, as duas hospedadas no próprio site (nenhuma vem de CDN). Inter Tight no que o visitante lê como conteúdo;
+        JetBrains Mono em tudo que é terminal e no corpo de texto. Tamanhos por papel; os fluidos crescem de 390 a 1440 px.
+      </p>
+      <div class="ds-dupla">
+        <div class="ds-fonte">
+          <p class="ds-fonte__nome">--fonte-titulo · Inter Tight Variable · 600–800</p>
+          <p class="ds-fonte__amostra ds-tipo--h1">Orchestration</p>
+          <ul class="ds-fonte__usos" role="list">
+            {fontesTitulo.map((u) => <li>{u}</li>)}
+          </ul>
+          <p class="ds-apagado ds-meta">h1 800 · −0,025 em · h2 e títulos de cartão 700 · −0,02 a −0,01 em</p>
+        </div>
+        <div class="ds-fonte">
+          <p class="ds-fonte__nome">--fonte-mono · JetBrains Mono Variable · 400–800</p>
+          <p class="ds-fonte__amostra">Orchestration</p>
+          <ul class="ds-fonte__usos" role="list">
+            {fontesMono.map((u) => <li>{u}</li>)}
+          </ul>
+          <p class="ds-apagado ds-meta">o nome da home fica em mono: o bloco do cursor tem a largura de um caractere</p>
+        </div>
+      </div>
       <ul class="ds-escala" role="list">
         {
           escala.map((e) => (
@@ -228,8 +274,8 @@ const dadosDeTeste = import.meta.env.DEV
                 --texto-{e.nome} · {e.min === e.max ? `${e.min} px` : `${e.min} → ${e.max} px`}
                 {e.uso && <span> · {e.uso}</span>}
               </p>
-              <p style={`font-size: var(--texto-${e.nome}); line-height: var(--entrelinha-secao)`}>
-                Samuel Pires de Miranda
+              <p class={classeTipo[e.nome]} style={`font-size: var(--texto-${e.nome}); line-height: var(--entrelinha-secao)`}>
+                {classeTipo[e.nome] ? 'Airflow ETL Orchestration' : 'Samuel Pires de Miranda'}
               </p>
             </li>
           ))
@@ -241,6 +287,10 @@ const dadosDeTeste = import.meta.env.DEV
       <p style="font-weight: var(--peso-medio)">600 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
       <p style="font-weight: var(--peso-forte)">700 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
       <p style="font-weight: var(--peso-display)">800 · [INFO] pipeline concluído em 3,2&nbsp;s</p>
+      <p class="ds-apagado ds-meta">Inter Tight, nos mesmos pesos 600 · 700 · 800:</p>
+      <p class="ds-tipo--cartao" style="font-weight: var(--peso-medio)">600 · Dois Postgres</p>
+      <p class="ds-tipo--cartao">700 · Airflow ETL Orchestration</p>
+      <p class="ds-tipo--h1" style="font-size: var(--texto-secao)">800 · Airflow ETL Orchestration</p>
 
       <h3 class="ds-sub">glifos</h3>
       <p>ã ç é õ ú â · 0O 1lI · {'{}'} [] () · -&gt; != =&gt; (sem ligaduras)</p>
@@ -293,15 +343,50 @@ const dadosDeTeste = import.meta.env.DEV
 
     <section class="ds-secao" aria-labelledby="t-raio">
       <h2 id="t-raio"><span class="ds-num">05</span> raios</h2>
-      <ul class="ds-raios" role="list">
-        {
-          raios.map((r) => (
-            <li>
-              <span class="ds-caixa" style={`border-radius: var(--raio-${r})`} />
-              <span class="ds-apagado ds-meta">--raio-{r}</span>
-            </li>
-          ))
-        }
+      <p class="ds-apagado">
+        Cantos arredondados, escolhidos pelo papel do elemento: o componente pede o token do seu papel, nunca um valor solto.
+        Valor e “onde usa” saem do próprio tokens.css.
+      </p>
+      <table class="ds-tabela">
+        <caption class="sr-only">Raios: token, valor e onde usa</caption>
+        <thead>
+          <tr><th scope="col">token</th><th scope="col">valor</th><th scope="col">onde usa</th></tr>
+        </thead>
+        <tbody>
+          {
+            raios.map((r) => (
+              <tr>
+                <th scope="row">
+                  <span class:list={['ds-caixa', r.token === 'raio-ponto' && 'ds-caixa--ponto']} style={`border-radius: var(--${r.token})`} />
+                  --{r.token}
+                </th>
+                <td>{r.valor}</td>
+                <td class="ds-apagado">{r.onde}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+
+      <h3 class="ds-sub">regras</h3>
+      <ol class="ds-regras" role="list">
+        <li><span class="ds-num">01</span>Cartão que é link usa o raio do cartão; o anel de foco acompanha o mesmo raio.</li>
+        <li><span class="ds-num">02</span>Elemento dentro de um cartão usa um raio menor que o dele (botão de 10 px dentro de cartão de 16 px).</li>
+        <li><span class="ds-num">03</span>Sempre retos: cursor de bloco, quadrados do calendário, barras de dado, filetes e fios.</li>
+        <li><span class="ds-num">04</span>Botão e pílula com no mínimo 44 px de altura no celular.</li>
+      </ol>
+
+      <h3 class="ds-sub">onde cada raio aparece (componentes reais)</h3>
+      <ul class="ds-onde" role="list">
+        <li><a class="botao botao--primario" href="#t-botoes">[ ver projetos ]</a><span>botão · --raio-botao</span></li>
+        <li><ul class="chips" role="list"><li>Python</li><li>DuckDB</li></ul><span>chip · --raio-botao</span></li>
+        <li><pre class="codigo">SELECT * FROM projetos;</pre><span>bloco de código · --raio-botao</span></li>
+        <li><span class="dag-no"><span class="dag-no__nome"><span class="dag-no__ponto dag-no__ponto--ok"></span>você</span><span class="dag-no__sub">visitante</span></span><span>nó de DAG · --raio-botao</span></li>
+        <li><a class="canal" href="#t-contato"><span class="canal__nome">GitHub</span><span class="canal__endereco">/SamuelzinPires</span></a><span>cartão de contato · --raio-cartao</span></li>
+        <li><span class="no-certificado"><span class="no-certificado__meta">DataCamp · 29/10</span><span class="no-certificado__titulo">Streaming Concepts</span></span><span>cartão de certificado · --raio-cartao</span></li>
+        <li><nav class="alternador" aria-label="Exemplo de alternador"><a class="alternador__opcao" href="#t-raio">mapa</a><a class="alternador__opcao" href="#t-raio" aria-current="page">lista</a></nav><span>alternador · --raio-pilula</span></li>
+        <li><span class="migalha__estado--andamento">em andamento</span><span>etiqueta de estado · --raio-pilula</span></li>
+        <li><ul class="faixa-status" role="list"><li><span class="quadrado-status"></span></li><li><span class="quadrado-status quadrado-status--falha"></span></li></ul><span>quadrados do calendário e da fita de CI · --raio-1 (quase retos)</span></li>
       </ul>
     </section>
 
@@ -326,9 +411,18 @@ const dadosDeTeste = import.meta.env.DEV
 
     <section class="ds-secao" aria-labelledby="t-botoes">
       <h2 id="t-botoes"><span class="ds-num">07</span> botões, links e foco</h2>
+      <p class="ds-apagado">
+        Botão e link-botão: <code class="ds-codigo-inline">--raio-botao</code> (10 px), altura mínima de 44 px. O botão primário é o texto{' '}
+        <code class="ds-codigo-inline">--cor-fundo</code> sobre <code class="ds-codigo-inline">--cor-azul-claro</code>: {razao('fundo', 'azul-claro')}:1.
+        Os CTAs da home levam os colchetes <code class="ds-codigo-inline">[ ]</code>; os do contato levam a seta.
+      </p>
       <div class="ds-linha-comp">
         <a class="botao botao--primario" href="#t-lista">[ ver projetos ]</a>
         <a class="botao botao--secundario" href="#t-contato">[ contato ]</a>
+      </div>
+      <div class="ds-linha-comp">
+        <a class="botao botao--primario" href="#t-contato">escrever<Icone nome="seta" /></a>
+        <button class="botao botao--secundario" type="button">copiar</button>
       </div>
       <p>Link interno: <a href="/">página inicial</a></p>
       <p>
@@ -557,6 +651,11 @@ const dadosDeTeste = import.meta.env.DEV
 
     <section class="ds-secao" aria-labelledby="t-contato">
       <h2 id="t-contato"><span class="ds-num">14</span> contato e certificados</h2>
+      <p class="ds-apagado">
+        Cartão de contato e de certificado: <code class="ds-codigo-inline">--raio-cartao</code> (16 px). Os botões “escrever” e “copiar”
+        dentro do cartão usam <code class="ds-codigo-inline">--raio-botao</code> (10 px), menor que o do cartão. Contraste sobre o painel:
+        texto {razao('texto', 'painel')}:1 · apagado {razao('apagado', 'painel')}:1 · azul-claro {razao('azul-claro', 'painel')}:1.
+      </p>
       <div class="ds-dupla">
         <div class="canal canal--ativo">
           <span class="canal__nome">e-mail</span>
@@ -711,7 +810,10 @@ const dadosDeTeste = import.meta.env.DEV
         <code class="ds-codigo-inline">.dag-linha</code>). O caminho do canal sob o mouse, o foco ou o toque acende
         (<code class="ds-codigo-inline">.is-ativo</code>, <code class="ds-codigo-inline">.is-antes</code>,
         <code class="ds-codigo-inline">.is-depois</code>); sem JavaScript o e-mail fica aceso e o “copiar” não aparece. LinkedIn e GitHub:
-        o cartão inteiro é o link. “escrever” e “copiar” têm 44 px de altura.
+        o cartão inteiro é o link. “escrever” e “copiar” têm 44 px de altura. Cantos: cartão do canal em{' '}
+        <code class="ds-codigo-inline">--raio-cartao</code> (16 px), nós “você” e “Samuel” em{' '}
+        <code class="ds-codigo-inline">--raio-botao</code> (10 px), fios e trilhos retos. Contraste do endereço (apagado) sobre o painel do
+        cartão: {razao('apagado', 'painel')}:1; “escrever” (fundo sobre azul-claro): {razao('fundo', 'azul-claro')}:1.
       </p>
       <ContatoDag />
     </section>
@@ -810,6 +912,7 @@ const dadosDeTeste = import.meta.env.DEV
 
   .ds-num {
     color: var(--cor-apagado);
+    font-family: var(--fonte-mono);
     font-weight: var(--peso-normal);
     margin-right: var(--esp-2);
   }
@@ -859,7 +962,7 @@ const dadosDeTeste = import.meta.env.DEV
     padding: var(--esp-4);
     background: var(--cor-painel);
     border: var(--borda);
-    border-radius: var(--raio-3);
+    border-radius: var(--raio-cartao);
     font-size: var(--texto-rotulo);
   }
 
@@ -867,7 +970,7 @@ const dadosDeTeste = import.meta.env.DEV
     flex: none;
     width: 3rem;
     height: 3rem;
-    border-radius: var(--raio-2);
+    border-radius: var(--raio-botao);
     border: var(--borda);
   }
 
@@ -940,7 +1043,7 @@ const dadosDeTeste = import.meta.env.DEV
 
   .ds-par {
     padding: var(--esp-1) var(--esp-3);
-    border-radius: var(--raio-2);
+    border-radius: var(--raio-botao);
     font-weight: var(--peso-forte);
   }
 
@@ -1032,28 +1135,188 @@ const dadosDeTeste = import.meta.env.DEV
     padding: var(--esp-4);
     background: var(--cor-painel);
     border: var(--borda);
-    border-radius: var(--raio-2);
+    border-radius: var(--raio-botao);
     font-size: var(--texto-rotulo);
   }
 
-  /* raios */
-  .ds-raios {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--esp-5);
+  /* raios: tabela token → valor → onde usa */
+  .ds-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--texto-rotulo);
   }
 
-  .ds-raios li {
+  .ds-tabela th,
+  .ds-tabela td {
+    padding: var(--esp-3) var(--esp-4) var(--esp-3) 0;
+    border-bottom: var(--borda);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .ds-tabela thead th {
+    font-weight: var(--peso-medio);
+    letter-spacing: var(--tracking-rotulo);
+    text-transform: uppercase;
+    color: var(--cor-apagado);
+  }
+
+  .ds-tabela tbody th {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-3);
+    min-width: 13rem;
+    font-weight: var(--peso-forte);
+    white-space: nowrap;
+  }
+
+  .ds-tabela td:nth-child(2) {
+    white-space: nowrap;
+  }
+
+  .ds-caixa {
+    flex: none;
+    width: 3.5rem;
+    height: 3rem; /* alta o bastante para o raio do painel (20 px) não virar pílula */
+    background: var(--cor-painel);
+    border: 1px solid var(--cor-azul-claro);
+  }
+
+  .ds-caixa--ponto {
+    width: 3rem;
+  }
+
+  /* abaixo de 768 px cada linha da tabela vira um bloco (3 colunas não cabem em 390 px) */
+  @media (max-width: 767px) {
+    .ds-tabela thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .ds-tabela,
+    .ds-tabela tbody,
+    .ds-tabela tr,
+    .ds-tabela th,
+    .ds-tabela td {
+      display: block;
+    }
+
+    .ds-tabela tbody th {
+      display: flex;
+    }
+
+    .ds-tabela tr {
+      padding-block: var(--esp-3);
+      border-bottom: var(--borda);
+    }
+
+    .ds-tabela th,
+    .ds-tabela td {
+      padding: var(--esp-1) 0;
+      border: 0;
+    }
+  }
+
+  .ds-regras {
+    display: grid;
+    gap: var(--esp-3);
+    font-size: var(--texto-nav);
+  }
+
+  .ds-regras li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: var(--esp-2);
+  }
+
+  .ds-regras .ds-num {
+    margin: 0;
+    color: var(--cor-azul-claro);
+  }
+
+  .ds-onde {
+    display: grid;
+    gap: var(--esp-5) var(--esp-6);
+    align-items: start;
+  }
+
+  @media (min-width: 768px) {
+    .ds-onde {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .ds-onde {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .ds-onde > li {
     display: grid;
     gap: var(--esp-2);
     justify-items: start;
   }
 
-  .ds-caixa {
-    width: 4rem;
-    height: 3rem;
+  .ds-onde > li > span:last-child {
+    font-size: var(--texto-micro);
+    color: var(--cor-apagado);
+  }
+
+  /* fontes (seção 02) */
+  .ds-fonte {
+    display: grid;
+    align-content: start;
+    gap: var(--esp-3);
+    padding: var(--esp-5);
     background: var(--cor-painel);
-    border: 1px solid var(--cor-azul-claro);
+    border: var(--borda);
+    border-radius: var(--raio-cartao);
+  }
+
+  .ds-fonte__nome {
+    font-size: var(--texto-rotulo);
+    color: var(--cor-azul-claro);
+  }
+
+  .ds-fonte__amostra {
+    font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
+    font-weight: var(--peso-display);
+    line-height: 1;
+  }
+
+  .ds-fonte__usos {
+    display: grid;
+    gap: var(--esp-1);
+    font-size: var(--texto-rotulo);
+  }
+
+  .ds-fonte__usos li::before {
+    content: '· ';
+    color: var(--cor-apagado);
+  }
+
+  /* amostras de título: Inter Tight, no peso e no tracking de cada papel */
+  .ds-tipo--h1 {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-display);
+    letter-spacing: var(--tracking-titulo);
+  }
+
+  .ds-tipo--h2 {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    letter-spacing: var(--tracking-secao);
+  }
+
+  .ds-tipo--cartao {
+    font-family: var(--fonte-titulo);
+    font-size: var(--texto-cartao);
+    font-weight: var(--peso-forte);
+    letter-spacing: var(--tracking-cartao);
   }
 
   /* movimento */

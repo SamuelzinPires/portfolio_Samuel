@@ -16,6 +16,7 @@
   --cor-azul-claro: #58A6FF; /* azul para texto e links (7,49:1) */
   --cor-verde: #3FB950;      /* OK */
   --cor-ambar: #D29922;      /* WARN */
+  --cor-branco: #FFFFFF;     /* fora da paleta fechada, só como texto sobre --cor-azul: 4,63:1 (o #E6EDF3 daria 3,92:1) */
 
   /* ── Cores de papel (o componente pede o papel, não a cor) ─────────── */
   --cor-link: var(--cor-azul-claro);
@@ -24,8 +25,9 @@
   --cor-botao-fundo: var(--cor-azul-claro);
   --cor-botao-texto: var(--cor-fundo);
   --cor-botao-fundo-hover: var(--cor-texto);
+  --cor-texto-sobre-azul: var(--cor-branco); /* texto sobre preenchimento --cor-azul (cartão azul do destaque) */
   --cor-selecao: var(--cor-azul);
-  --cor-ok: var(--cor-verde);             /* execução ok, em andamento */
+  --cor-ok: var(--cor-verde);            /* execução ok, em andamento */
   --cor-falha: var(--cor-ambar);          /* falha, violação, falha de propósito */
   --cor-estrela: var(--cor-ambar);        /* ★ projeto em destaque */
   --cor-selecionado: var(--cor-texto);    /* anel/contorno do item aberto */
@@ -48,6 +50,9 @@
 
   /* ── Tipografia ────────────────────────────────────────────────────── */
   --fonte-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, 'Liberation Mono', monospace;
+  /* Só os títulos que o visitante lê como conteúdo (h1 e h2 das páginas, título de projeto e de cartão).
+     Prompt, menu, rótulos, datas, stack, código e corpo de texto continuam em --fonte-mono. */
+  --fonte-titulo: 'Inter Tight Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   --peso-normal: 400;
   --peso-medio: 600;
@@ -55,21 +60,26 @@
   --peso-display: 800;
 
   /* Tamanhos por papel. Os fluidos crescem em linha reta de 390 px (celular) até 1440 px (desktop) */
-  --texto-titulo: clamp(2.5rem, 1.6643rem + 3.4286vw, 4.75rem);  /* 40 → 76 px · h1 de página, nome no A2 */
+  --texto-titulo: clamp(2.5rem, 1.6643rem + 3.4286vw, 4.75rem);  /* 40 → 76 px · nome no A2 e no 404 (mono) */
+  --texto-titulo-pagina: clamp(3.25rem, 2.2286rem + 4.1905vw, 6rem); /* 52 → 96 px · h1 de página (Inter Tight) */
+  --texto-cartao: clamp(1.3125rem, 1.2893rem + 0.0952vw, 1.375rem); /* 21 → 22 px · título de projeto e de cartão (Inter Tight) */
   --texto-numero: clamp(2.75rem, 2.3786rem + 1.5238vw, 3.75rem); /* 44 → 60 px · números grandes do topo */
-  --texto-secao: clamp(1.5rem, 1.4071rem + 0.381vw, 1.75rem);    /* 24 → 28 px · h2 de seção */
+  --texto-secao: clamp(1.625rem, 1.4857rem + 0.5714vw, 2rem);    /* 26 → 32 px · h2 de seção (Inter Tight) */
   --texto-lead: clamp(0.9375rem, 0.8679rem + 0.2857vw, 1.125rem); /* 15 → 18 px · subtítulo, pergunta do projeto */
   --texto-base: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);    /* 15 → 16 px · corpo */
   --texto-nav: 0.875rem;                                          /* 14 → 14 px · menu, botões, células */
   --texto-rotulo: 0.8125rem;                                      /* 13 → 13 px · rótulos, metadados, legendas */
   --texto-micro: 0.75rem;                                         /* 12 → 12 px · eixos de gráfico, log no celular */
 
-  --entrelinha-titulo: 1.05;
+  --entrelinha-titulo: 1.05;         /* nome no A2 (mono) */
+  --entrelinha-titulo-pagina: 0.98;  /* h1 de página (Inter Tight é mais compacta que a mono) */
   --entrelinha-secao: 1.2;
   --entrelinha-media: 1.4;
   --entrelinha-texto: 1.7;
-  --tracking-titulo: -0.035em;
-  --tracking-secao: -0.02em;
+  --tracking-nome: -0.035em;    /* nome no A2 (mono) */
+  --tracking-titulo: -0.025em;  /* h1 de página (Inter Tight): −0,035 colava as letras */
+  --tracking-secao: -0.02em;    /* h2 */
+  --tracking-cartao: -0.015em;  /* título de projeto e de cartão */
   --tracking-rotulo: 0.06em;
 
   /* ── Espaçamentos (base de 4 px) ───────────────────────────────────── */
@@ -98,14 +108,14 @@
   --gap-colunas: clamp(3rem, 1.8857rem + 4.5714vw, 6rem);        /* 48 → 96 px · entre coluna principal e lateral */
   --alvo-toque: 44px;                                            /* menor área tocável no celular */
 
-  /* ── Raios (terminal: cantos quase retos) ──────────────────────────── */
-  --raio-0: 0;
-  --raio-1: 2px;
-  --raio-2: 4px;      /* botão, bloco de código, nó de DAG */
-  --raio-3: 6px;      /* cartão de canal, nó de certificado */
-  --raio-painel: 14px; /* cantos de cima do painel fixo do celular */
-  --raio-pilula: 999px;
-  --raio-ponto: 50%;
+  /* ── Raios (por papel: o componente pede o papel, nunca um valor solto) ── */
+  --raio-0: 0;            /* reto: filetes, fios, barras de dado, cursor de bloco */
+  --raio-1: 2px;          /* quase reto: quadrados do calendário e da fita de CI, código no meio do texto, foco de link solto */
+  --raio-botao: 10px;     /* botão, link-botão, chip, bloco de código, nó de DAG */
+  --raio-cartao: 16px;    /* cartão de contato, de certificado e de projeto, imagem do projeto */
+  --raio-painel: 20px;    /* painel da peça-assinatura; painel fixo do celular (só os cantos de cima) */
+  --raio-pilula: 999px;   /* alternador, etiqueta de estado */
+  --raio-ponto: 50%;      /* pontos, indicadores, círculo da seta */
 
   --borda: 1px solid var(--cor-linha);
 

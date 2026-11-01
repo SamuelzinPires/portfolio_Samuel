@@ -4,12 +4,14 @@
 // Open Graph (a prévia no LinkedIn e no WhatsApp): título, descrição e imagem de cada página.
 import { ClientRouter } from 'astro:transitions';
 import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/inter-tight';
 import 'lenis/dist/lenis.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/componentes.css';
-// Só o arquivo do 1º paint: latino, normal (o variável cobre todos os pesos).
+// Só os arquivos do 1º paint: latino, normal (o variável cobre todos os pesos). Tudo vem do próprio site (nada de CDN).
 import fonteLatina from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
+import fonteTituloLatina from '@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2?url';
 
 interface Props {
   titulo: string;
@@ -18,9 +20,11 @@ interface Props {
   /** Imagem de compartilhamento, caminho a partir da raiz (ex.: "/og/padrao.png"). */
   imagem?: string;
   tipoOg?: 'website' | 'article';
+  /** false nas páginas sem título em Inter Tight (home e 404, cujo nome é mono): não pré-carrega a fonte à toa. */
+  fonteTitulo?: boolean;
 }
 
-const { titulo, descricao, noindex = false, imagem = '/og/padrao.png', tipoOg = 'website' } = Astro.props;
+const { titulo, descricao, noindex = false, imagem = '/og/padrao.png', tipoOg = 'website', fonteTitulo = true } = Astro.props;
 
 // O Open Graph precisa de endereço completo (https://…): vem do `site` do astro.config.mjs
 const absoluta = (caminho: string) => (Astro.site ? new URL(caminho, Astro.site).href : undefined);
@@ -55,6 +59,7 @@ const imagemAbsoluta = absoluta(imagem);
       )
     }
     <link rel="preload" href={fonteLatina} as="font" type="font/woff2" crossorigin />
+    {fonteTitulo && <link rel="preload" href={fonteTituloLatina} as="font" type="font/woff2" crossorigin />}
     <ClientRouter />
   </head>
   <body>
