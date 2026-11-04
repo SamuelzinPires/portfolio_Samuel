@@ -2,6 +2,7 @@
 // fuso do Brasil (UTC−3) isso seria 31/07. Formatar em hora local mudaria o dia, às vezes o mês.
 // Os meses são escritos à mão (`Intl` devolve "ago." com ponto, e o design usa "ago").
 const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const mesesCompletos = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
 const mes = (d: Date) => meses[d.getUTCMonth()];
 const ano = (d: Date) => d.getUTCFullYear();
@@ -18,8 +19,11 @@ export function periodo(inicio: Date, fim?: Date, aberto = 'hoje'): string {
 /** "03/08" */
 export const diaMes = (d: Date) => `${dois(d.getUTCDate())}/${dois(d.getUTCMonth() + 1)}`;
 
-/** "07 ago" (rótulo do certificado e do eixo da cronologia) */
+/** "07 ago" */
 export const diaMesNome = (d: Date) => `${dois(d.getUTCDate())} ${mes(d)}`;
+
+/** "29 out 2026" (data completa do certificado) */
+export const diaMesNomeAno = (d: Date) => `${diaMesNome(d)} ${ano(d)}`;
 
 /** "15/09/2026" */
 export const diaMesAno = (d: Date) => `${diaMes(d)}/${ano(d)}`;
@@ -29,6 +33,9 @@ export const mesAno = (d: Date) => `${mes(d)}/${ano(d)}`;
 
 /** "jan", "fev"… */
 export const nomeDoMes = (d: Date) => mes(d);
+
+/** "janeiro", "fevereiro"… (para o leitor de tela: "out" sozinho não diz muito) */
+export const nomeCompletoDoMes = (d: Date) => mesesCompletos[d.getUTCMonth()];
 
 /** "2026-08-03", para o atributo datetime */
 export const isoDia = (d: Date) => `${ano(d)}-${dois(d.getUTCMonth() + 1)}-${dois(d.getUTCDate())}`;

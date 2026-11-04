@@ -1,0 +1,57 @@
+---
+// Certificações por ano (modelo C3): ano → mês → cartão, o mais recente primeiro.
+// Só o ano mais recente nasce aberto; os anteriores são uma linha recolhida (<details>, funciona sem JavaScript).
+// Um mês com mais de LIMITE_MES certificados ganha "ver os outros N" (src/scripts/certificados.ts): é melhoria
+// progressiva, então sem JavaScript todos os certificados aparecem e nenhum botão existe.
+import { LIMITE_MES, agruparPorAno, contarCertificados, type Certificado } from '../../lib/certificados';
+import Icone from '../Icone.astro';
+import CartaoCertificado from './CartaoCertificado.astro';
+
+interface Props {
+  certificados: Certificado[];
+  /** Para a /design mostrar o ano também recolhido. */
+  recolhido?: boolean;
+}
+
+const { certificados, recolhido = false } = Astro.props;
+const anos = agruparPorAno(certificados);
+// a /design mostra o mesmo ano aberto e recolhido na mesma página: os ids não podem repetir
+const idMes = (chave: string) => `${recolhido ? 'mes-recolhido' : 'mes'}-${chave}`;
+---
+
+<div class="certificados" data-certificados data-limite={LIMITE_MES}>
+  <p class="sr-only" role="status" data-status></p>
+  {
+    anos.map((g, i) => (
+      <details class="grupo-ano" open={i === 0 && !recolhido}>
+        <summary class="grupo-ano__cabeca">
+          <h2 class="grupo-ano__titulo">{g.ano}</h2>
+          <span class="grupo-ano__periodo">{g.periodo}</span>
+          <span class="grupo-ano__contagem">{contarCertificados(g.total)}</span>
+          <Icone nome="chevron" class="grupo-ano__seta" />
+        </summary>
+        <div class="grupo-ano__meses">
+          {g.meses.map((m) => (
+            <section class="grupo-mes" data-mes data-nome={m.nome} aria-labelledby={idMes(m.chave)}>
+              <header class="grupo-mes__rotulo">
+                <h3 class="grupo-mes__nome" id={idMes(m.chave)}>
+                  <span aria-hidden="true">{m.nome}</span>
+                  <span class="sr-only">{m.nomeCompleto}</span>
+                </h3>
+                <span class="grupo-mes__contagem">{contarCertificados(m.certificados.length)}</span>
+              </header>
+              <ul class="grupo-mes__lista" role="list">
+                {m.certificados.map((c) => (
+                  <li data-cert>
+                    <CartaoCertificado certificado={c} />
+                  </li>
+                ))}
+              </ul>
+              <button type="button" class="ver-todos grupo-mes__mais" data-ver-todos hidden />
+            </section>
+          ))}
+        </div>
+      </details>
+    ))
+  }
+</div>

@@ -1,10 +1,11 @@
 ---
-// Certificações: cronologia por trilhas (raias Linguagem · Dados · Conceitos), eixo ordinal por data de
-// conclusão. Tudo vem da collection `certificados`; sem PDF (não são hospedados nem abertos).
-// Certificado novo = uma linha nova em src/data/certificados.json.
-import Cronologia from '../components/certificados/Cronologia.astro';
+// Certificações (modelo C3): por ano e, dentro do ano, por mês, o mais recente primeiro. Tudo vem da collection
+// `certificados`; sem PDF (não são hospedados nem abertos). Certificado novo = uma linha nova em
+// src/data/certificados.json.
+import Certificados from '../components/certificados/Certificados.astro';
+import TextoSeta from '../components/TextoSeta.astro';
 import Pagina from '../layouts/Pagina.astro';
-import { carregarCertificados, resumir } from '../lib/certificados';
+import { carregarCertificados, contarCertificados, resumir } from '../lib/certificados';
 
 const certificados = await carregarCertificados();
 const resumo = resumir(certificados);
@@ -15,29 +16,21 @@ const resumo = resumir(certificados);
   descricao="Certificados de Python, SQL, importação de dados, APIs, engenharia de dados e cloud que Samuel Pires de Miranda concluiu na DataCamp em 2026."
 >
   <header class="cabeca-pagina">
-    <p class="consulta" aria-hidden="true">
-      <span class="consulta__prompt">&gt;</span>
-      <span>SELECT * FROM certificados<span class="consulta__extra"> ORDER BY conclusao</span>;</span>
-    </p>
+    {
+      resumo.linha && (
+        <p class="linha-resumo" aria-hidden="true">
+          &gt; <TextoSeta texto={resumo.linha} />
+        </p>
+      )
+    }
     <div class="cabeca-pagina__linha">
-      <div class="cabeca-pagina__texto">
-        <h1 class="titulo-pagina">certificações</h1>
-        <p class="lead cabeca-pagina__lead cabeca-pagina__lead--sempre">{resumo.frase}</p>
-      </div>
-      <dl class="numeros cabeca-pagina__numeros">
-        {
-          resumo.numeros.map((n) => (
-            <div class="numero">
-              <dt class="numero__rotulo">{n.rotulo}</dt>
-              <dd class="numero__valor">{n.valor}</dd>
-            </div>
-          ))
-        }
-      </dl>
+      <h1 class="titulo-pagina">certificações</h1>
+      <p class="lead cabeca-pagina__lead cabeca-pagina__lead--sempre cabeca-pagina__lead--lado">{resumo.frase}</p>
     </div>
   </header>
 
-  <Cronologia certificados={certificados} />
+  <Certificados certificados={certificados} />
+  {certificados.length > 0 && <p class="fim-lista">fim da lista · {contarCertificados(certificados.length)}</p>}
 </Pagina>
 
 <script>

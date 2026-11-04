@@ -64,7 +64,8 @@
   --texto-titulo-pagina: clamp(3.25rem, 2.2286rem + 4.1905vw, 6rem); /* 52 → 96 px · h1 de página (Inter Tight) */
   --texto-cartao: clamp(1.3125rem, 1.2893rem + 0.0952vw, 1.375rem); /* 21 → 22 px · título de projeto e de cartão (Inter Tight) */
   --texto-numero: clamp(2.75rem, 2.3786rem + 1.5238vw, 3.75rem); /* 44 → 60 px · números grandes do topo */
-  --texto-secao: clamp(1.625rem, 1.4857rem + 0.5714vw, 2rem);    /* 26 → 32 px · h2 de seção (Inter Tight) */
+  --texto-ano: clamp(2.75rem, 2.2857rem + 1.9048vw, 4rem);      /* 44 → 64 px · ano aberto nas certificações (Inter Tight) */
+  --texto-secao: clamp(1.625rem, 1.4857rem + 0.5714vw, 2rem);    /* 26 → 32 px · h2 de seção, ano recolhido (Inter Tight) */
   --texto-lead: clamp(0.9375rem, 0.8679rem + 0.2857vw, 1.125rem); /* 15 → 18 px · subtítulo, pergunta do projeto */
   --texto-base: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);    /* 15 → 16 px · corpo */
   --texto-nav: 0.875rem;                                          /* 14 → 14 px · menu, botões, células */
@@ -105,6 +106,7 @@
   --largura-texto: 68ch;                                         /* linha confortável de leitura */
   --largura-lateral: 18.5rem;                                    /* 296 px · coluna lateral da página de projeto */
   --largura-painel: 27.5rem;                                     /* 440 px · painel de detalhe ao lado da peça-assinatura */
+  --largura-rotulo-mes: 13.625rem;                               /* 218 px · coluna do mês ao lado dos cartões (1024+) */
   --gap-colunas: clamp(3rem, 1.8857rem + 4.5714vw, 6rem);        /* 48 → 96 px · entre coluna principal e lateral */
   --alvo-toque: 44px;                                            /* menor área tocável no celular */
 

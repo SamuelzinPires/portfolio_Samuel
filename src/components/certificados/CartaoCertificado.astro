@@ -1,0 +1,29 @@
+---
+// Cartão de um certificado (modelo C3): emissor e data completa em cima, título oficial embaixo.
+// Sem PDF. "verificar" só existe com `urlVerificacao`; sem ele o cartão não é clicável.
+import type { Certificado } from '../../lib/certificados';
+import Icone from '../Icone.astro';
+
+interface Props {
+  certificado: Certificado;
+}
+
+const { certificado: c } = Astro.props;
+---
+
+<div class="cartao-cert">
+  <p class="cartao-cert__meta">
+    <span class="cartao-cert__emissor">{c.emissor}</span>
+    <time class="cartao-cert__data" datetime={c.iso}>{c.rotulo}</time>
+  </p>
+  <p class="cartao-cert__titulo">{c.titulo}</p>
+  {
+    c.urlVerificacao && (
+      <a class="link-externo" href={c.urlVerificacao} target="_blank" rel="noopener noreferrer">
+        verificar
+        <Icone nome="externo" />
+        <span class="sr-only">(abre em nova aba)</span>
+      </a>
+    )
+  }
+</div>

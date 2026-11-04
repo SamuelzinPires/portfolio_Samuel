@@ -234,10 +234,9 @@ const certificados = defineCollection({
     id: z.string(),
     titulo: z.string(),
     emissor: z.string(),
-    trilha: z.enum(['linguagem', 'dados', 'conceitos']),
-    conclusao: z.coerce.date(),
+    conclusao: z.coerce.date(), // define o ano, o mês e a ordem (mais recente primeiro)
     urlVerificacao: z.url().optional(),
-    ordem: z.number().int().optional(), // desempate quando a data é igual; sem ele, desempata pelo título
+    ordem: z.number().int().optional(), // desempate quando a data é igual (menor primeiro); sem ele, desempata pelo título
   }),
 });
 

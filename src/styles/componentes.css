@@ -248,28 +248,29 @@
   }
 }
 
-/* título + frase à esquerda e os números à direita (certificações); os números só no desktop */
-.cabeca-pagina__linha {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-4);
+/* "> 11 certificados · ago → out/2026": a linha azul acima do título (certificações; a lista de projetos na 6b.4) */
+.linha-resumo {
+  font-size: var(--texto-rotulo);
+  color: var(--cor-link);
 }
 
-.cabeca-pagina__texto {
+@media (min-width: 768px) {
+  .linha-resumo {
+    font-size: var(--texto-nav);
+  }
+}
+
+/* título à esquerda e a frase de apoio ao lado, no pé do título (a partir de 1024 px); abaixo disso, uma sob a outra */
+.cabeca-pagina__linha {
   display: flex;
   flex-direction: column;
   gap: var(--esp-3);
 }
 
 @media (min-width: 768px) {
-  .cabeca-pagina__texto {
+  .cabeca-pagina__linha {
     gap: var(--esp-4);
   }
-}
-
-/* "dl.numeros.classe" porque `.numeros` (display: flex) vem depois no arquivo e tem a mesma força */
-.numeros.cabeca-pagina__numeros {
-  display: none;
 }
 
 @media (min-width: 1024px) {
@@ -280,13 +281,9 @@
     gap: var(--esp-8);
   }
 
-  .numeros.cabeca-pagina__numeros {
-    display: flex;
-    gap: var(--esp-6);
-  }
-
-  .cabeca-pagina__numeros .numero__valor {
-    font-size: calc(var(--texto-numero) * 0.65); /* 39 px: menor que os números de um projeto */
+  .cabeca-pagina__lead--lado {
+    max-width: 30rem;
+    padding-bottom: var(--esp-2);
   }
 }
 
@@ -1295,7 +1292,7 @@ button.barra-dado {
   color: var(--cor-apagado);
 }
 
-/* ── Contato e certificados ────────────────────────────────────────── */
+/* ── Contato ───────────────────────────────────────────────────────── */
 
 /* Cartão de canal de contato (e-mail, LinkedIn, GitHub). Na página de contato ele fica dentro da DAG (.dag-contato) */
 .canal {
@@ -1358,174 +1355,223 @@ a.canal:hover,
   padding-top: var(--esp-2);
 }
 
-.raia-titulo {
+/* ── Certificações por ano (C3) ────────────────────────────────────── */
+/* Ano → mês → cartão, o mais recente primeiro. O ano é um <details> (só o mais recente nasce aberto, os outros são
+   uma linha recolhida); o mês é um grupo com um filete em cima. O espaço dentro do mês é curto e entre meses é
+   maior: é ele, e não uma linha ligando os cartões, que mostra a ordem. O rótulo do mês fica à esquerda a partir de
+   1024 px e vira cabeçalho abaixo disso. O grupo de mês serve também à lista de projetos (6b.4). */
+
+.certificados {
   display: flex;
   flex-direction: column;
-  gap: var(--esp-1);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  font-weight: var(--peso-forte);
-  letter-spacing: var(--tracking-rotulo);
-  color: var(--cor-azul-claro);
+  gap: var(--esp-5);
+  min-width: 0;
 }
 
-.raia-titulo small {
-  font-size: var(--texto-micro);
-  font-weight: var(--peso-normal);
-  letter-spacing: 0;
+/* anos anteriores: uma linha recolhida cada, separadas por um filete */
+.grupo-ano ~ .grupo-ano {
+  padding-top: var(--esp-5);
+  border-top: var(--borda);
+}
+
+.grupo-ano__cabeca {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-4);
+  min-height: var(--alvo-toque);
+  padding-block: var(--esp-2);
+  border-radius: var(--raio-botao);
+  list-style: none; /* sem o triângulo padrão: o chevron é um SVG */
+  cursor: pointer;
+}
+
+.grupo-ano__cabeca::-webkit-details-marker {
+  display: none;
+}
+
+.grupo-ano__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-secao);
+  font-weight: var(--peso-display);
+  line-height: 1;
+  letter-spacing: var(--tracking-titulo);
+}
+
+.grupo-ano[open] .grupo-ano__titulo {
+  font-size: var(--texto-ano);
+}
+
+/* "ago–out": só no ano recolhido, onde ele diz o que há dentro */
+.grupo-ano__periodo,
+.grupo-ano__contagem {
+  font-size: var(--texto-rotulo);
   color: var(--cor-apagado);
 }
 
-.no-certificado {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-2);
-  width: 9.375rem;
-  padding: var(--esp-3);
-  background: var(--cor-fundo);
-  border: var(--borda);
-  border-radius: var(--raio-cartao);
+.grupo-ano[open] .grupo-ano__periodo {
+  display: none;
 }
 
-.no-certificado__meta {
-  font-size: var(--texto-micro);
+.grupo-ano__contagem {
+  margin-left: auto;
+}
+
+.grupo-ano__seta {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--cor-apagado);
+  transition: transform var(--dur-rapida) var(--ease-padrao);
+}
+
+.grupo-ano[open] .grupo-ano__seta {
+  transform: rotate(90deg);
+}
+
+.grupo-ano__cabeca:hover .grupo-ano__seta {
+  color: var(--cor-texto);
+}
+
+.grupo-ano__meses {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-6);
+  padding-top: var(--esp-4);
+}
+
+.grupo-mes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-3);
+  padding-top: var(--esp-3);
+  border-top: var(--borda);
+}
+
+.grupo-mes__rotulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grupo-mes__nome {
+  font-size: var(--texto-nav);
+  font-weight: var(--peso-forte);
+}
+
+.grupo-mes__contagem {
+  font-size: var(--texto-rotulo);
   color: var(--cor-apagado);
 }
 
-.no-certificado__titulo {
-  font-size: var(--texto-rotulo);
-  font-weight: var(--peso-forte);
-  line-height: var(--entrelinha-media);
-}
-
-.trilha {
+/* cartões em colunas de no mínimo 272 px: 1 no celular, 2 no tablet, 3 no desktop largo */
+.grupo-mes__lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--esp-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.trilha-item {
-  display: grid;
-  grid-template-columns: 3.5rem minmax(0, 1fr);
-}
-
-.trilha-item__data {
-  padding-top: 2px;
-  font-size: var(--texto-rotulo);
-}
-
-.trilha-item__corpo {
-  position: relative;
+/* o cartão enche a altura da linha: cartões vizinhos ficam com a mesma altura */
+.grupo-mes__lista > li {
   display: flex;
-  flex-direction: column;
-  gap: var(--esp-1);
-  padding: 0 0 var(--esp-5) var(--esp-5);
-  border-left: 1px solid var(--cor-azul);
 }
 
-.trilha-item__corpo::before {
-  content: '';
-  position: absolute;
-  left: -5px;
-  top: 5px;
-  width: 9px;
-  height: 9px;
-  border-radius: var(--raio-ponto);
-  background: var(--cor-azul-claro);
+.grupo-mes__lista > li > * {
+  flex: 1;
 }
 
-.trilha-item__titulo {
-  font-weight: var(--peso-forte);
-  line-height: var(--entrelinha-media);
-}
-
-.trilha-item__emissor {
-  font-size: var(--texto-rotulo);
-  color: var(--cor-apagado);
-}
-
-/* ── Certificações: cronologia por trilhas ─────────────────────────── */
-/* Os mesmos dados saem em duas versões: o quadro de raias (a partir de 1024 px) e a lista por trilha (abaixo).
-   Cada certificado é uma coluna do eixo ordinal; a linha azul liga os certificados da mesma raia e a pontilhada
-   desce de cada certificado até a data no eixo. A geometria nunca vem de `style` inline (a CSP da 7a bloquearia):
-   as ligações são classes (.celula--esq/--dir/--prumo) calculadas em src/lib/cronologia.ts. */
-
-.cronologia {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-4);
-  min-width: 0; /* dentro de uma grade (a /design), o quadro largo não pode esticar a coluna */
-}
-
-.quadro-cronologia {
-  display: none;
-  --coluna: 10rem; /* 160 px: o nó de 150 px e 10 px de respiro */
-  --rotulos: 11.5rem;
+@media (min-width: 768px) {
+  .grupo-mes__lista {
+    gap: var(--esp-4);
+  }
 }
 
 @media (min-width: 1024px) {
-  .quadro-cronologia {
-    display: block;
+  .grupo-ano__meses {
+    gap: var(--esp-7);
+    padding-top: var(--esp-5);
   }
 
-  .lista-cronologia {
-    display: none;
+  .grupo-mes {
+    display: grid;
+    grid-template-columns: var(--largura-rotulo-mes) minmax(0, 1fr);
+    grid-template-areas:
+      'rotulo lista'
+      '. mais';
+    column-gap: var(--esp-7);
+    row-gap: var(--esp-3);
+    padding-top: var(--esp-5);
+  }
+
+  .grupo-mes__rotulo {
+    grid-area: rotulo;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: var(--esp-2);
+  }
+
+  .grupo-mes__nome {
+    font-size: var(--texto-base);
+  }
+
+  .grupo-mes__lista {
+    grid-area: lista;
+  }
+
+  .grupo-mes__mais {
+    grid-area: mais;
+    justify-self: start; /* em grade, o alinhamento é por justify (o align-self do .ver-todos vale só em flex) */
   }
 }
 
-/* Filtro por trilha/emissor: só com muitos certificados e só com JavaScript */
-.filtros {
+/* Cartão de certificado: emissor e data completa em cima, título oficial (em inglês) embaixo */
+.cartao-cert {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--esp-3) var(--esp-6);
-}
-
-.filtro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: var(--esp-2);
-}
-
-.filtro__rotulo {
-  margin-right: var(--esp-1);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-rotulo);
-  color: var(--cor-apagado);
-}
-
-.filtro__botao {
-  min-height: var(--alvo-toque);
-  padding: var(--esp-1) var(--esp-4);
-  background: transparent;
+  padding: var(--esp-4);
+  background: var(--cor-painel);
   border: var(--borda);
-  border-radius: var(--raio-botao);
-  color: var(--cor-texto);
-  font: inherit;
-  font-size: var(--texto-rotulo);
-  cursor: pointer;
-  transition:
-    background-color var(--dur-rapida) var(--ease-padrao),
-    border-color var(--dur-rapida) var(--ease-padrao);
-}
-
-.filtro__botao:hover {
-  border-color: var(--cor-azul-claro);
-}
-
-.filtro__botao[aria-pressed='true'] {
-  background: var(--cor-botao-fundo);
-  border-color: var(--cor-botao-fundo);
-  color: var(--cor-botao-texto);
+  border-radius: var(--raio-cartao);
 }
 
 @media (min-width: 1024px) {
-  .filtro__botao {
-    min-height: 2rem;
+  .cartao-cert {
+    gap: var(--esp-3);
+    padding: calc(var(--esp-4) + var(--esp-1));
   }
 }
 
-/* "ver todos (6)" / "recolher": botão com cara de link */
+.cartao-cert__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--esp-3);
+  margin: 0;
+  font-size: var(--texto-rotulo);
+}
+
+.cartao-cert__emissor {
+  color: var(--cor-apagado);
+}
+
+.cartao-cert__data {
+  font-weight: var(--peso-forte);
+  white-space: nowrap;
+}
+
+.cartao-cert__titulo {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-cartao);
+  font-weight: var(--peso-medio);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-cartao);
+}
+
+/* "ver os outros 3 de out" / "recolher": botão com cara de link */
 .ver-todos {
   align-self: flex-start;
   min-height: var(--alvo-toque);
@@ -1544,219 +1590,24 @@ a.canal:hover,
   color: var(--cor-link-hover);
 }
 
-/* Quadro do desktop: a faixa rola para o lado quando há mais colunas do que cabem */
-.quadro-cronologia__rolagem {
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--cor-linha) transparent;
-}
-
-/* sobra quadro à direita: a borda esmaece (o script marca data-rolavel e data-fim) */
-.quadro-cronologia__rolagem[data-rolavel='1']:not([data-fim='1']) {
-  mask-image: linear-gradient(to right, black calc(100% - 3rem), transparent);
-}
-
-.quadro-cronologia__corpo {
-  width: max-content;
-  min-width: 100%;
-}
-
-.raia {
+/* "● fim da lista · 11 certificados": fecha uma lista longa (certificações; a lista de projetos na 6b.4) */
+.fim-lista {
   display: flex;
-  border-top: 1px dashed var(--cor-linha);
-}
-
-/* a primeira raia visível tem a linha de cima contínua (o script marca de novo ao filtrar) */
-.raia--primeira {
-  border-top: var(--borda);
-}
-
-/* título da raia (e "ver todos") ficam parados à esquerda enquanto o quadro rola */
-.raia__rotulo {
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  flex: none;
-  width: var(--rotulos);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--esp-1);
-  padding: var(--esp-4) var(--esp-4) var(--esp-4) 0;
-  background: var(--cor-fundo);
-}
-
-.raia__rotulo .ver-todos {
-  min-height: 2rem;
-}
-
-.raia__nos {
-  display: flex;
-  flex: 1 0 auto;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.celula {
-  position: relative;
-  flex: 1 0 auto;
-  width: var(--coluna);
-  display: flex;
-  flex-direction: column;
   align-items: center;
-}
-
-.celula--no {
-  padding-top: var(--esp-4);
-}
-
-/* linha azul da raia: entra pelo lado esquerdo, sai pelo direito, passa por trás dos certificados */
-.celula::before {
-  content: '';
-  position: absolute;
-  top: calc(var(--esp-4) + 3.25rem);
-  left: 50%;
-  right: 50%;
-  height: 1px;
-  background: var(--cor-azul);
-}
-
-.celula--esq::before {
-  left: 0;
-}
-
-.celula--dir::before {
-  right: 0;
-}
-
-.celula .no-certificado {
-  position: relative;
-  z-index: 1;
-  flex: none;
-}
-
-/* pontilhada: desce do certificado até a data no eixo */
-.celula--no::after {
-  content: '';
-  flex: 1 0 var(--esp-4);
-  border-left: 1px dashed var(--cor-linha);
-}
-
-.celula--prumo::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  border-left: 1px dashed var(--cor-linha);
-}
-
-/* eixo ordinal: cada passo é um certificado, não um intervalo de tempo */
-.eixo {
-  display: flex;
-}
-
-.eixo__rotulo {
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  flex: none;
-  display: flex;
-  align-items: flex-start;
   gap: var(--esp-2);
-  width: var(--rotulos);
-  margin: 0;
-  padding-top: var(--esp-3);
-  background: var(--cor-fundo);
-  font-size: var(--texto-rotulo);
-  color: var(--cor-apagado);
-}
-
-.eixo__pontos {
-  display: flex;
-  flex: 1 0 auto;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--cor-apagado);
-}
-
-.eixo__ponto {
-  position: relative;
-  flex: 1 0 auto;
-  width: var(--coluna);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--esp-1);
-  padding-block: var(--esp-4) var(--esp-3);
-  font-size: var(--texto-rotulo);
-}
-
-.eixo__ponto::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  height: 0.5rem;
-  border-left: 1px solid var(--cor-apagado);
-}
-
-.eixo__data {
-  font-weight: var(--peso-forte);
-}
-
-/* o mês aparece só no primeiro passo de cada mês, quando os certificados são de mais de um */
-.eixo__mes {
-  display: none;
-  font-size: var(--texto-micro);
-  color: var(--cor-apagado);
-}
-
-.eixo__ponto--mes {
-  border-left: 1px solid var(--cor-linha);
-}
-
-.eixo__ponto--mes .eixo__mes {
-  display: block;
-}
-
-.dica-rolagem {
-  margin-top: var(--esp-3);
-  font-size: var(--texto-micro);
-  color: var(--cor-apagado);
-}
-
-/* Lista do celular e do tablet: por ano (se houver mais de um) e por trilha */
-.lista-cronologia {
-  max-width: 44rem;
-}
-
-.lista-ano__titulo {
-  padding-block: var(--esp-5) var(--esp-2);
-  font-size: var(--texto-secao);
-  color: var(--cor-apagado);
-}
-
-.raia-lista {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-4);
-  padding-block: var(--esp-5);
+  margin-top: var(--esp-6);
+  padding-top: var(--esp-5);
   border-top: var(--borda);
-}
-
-.raia-lista__cabeca {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.raia-lista__contagem {
   font-size: var(--texto-rotulo);
   color: var(--cor-apagado);
+}
+
+.fim-lista::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--raio-ponto);
+  background: var(--cor-ok);
 }
 
 /* ── Contato em DAG (K3): você → canal → Samuel ────────────────────── */
