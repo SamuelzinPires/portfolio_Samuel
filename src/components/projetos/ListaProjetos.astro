@@ -32,7 +32,7 @@ const idMes = (chave: string) => `projetos-${chave}`;
         </header>
         <ul class="grupo-mes__lista" role="list">
           {m.projetos.map((p) => (
-            <li class:list={[p.data.destaque && 'grupo-mes__item--destaque']}>
+            <li>
               <CartaoProjeto projeto={p} azul={p.id === maisRecente} />
             </li>
           ))}

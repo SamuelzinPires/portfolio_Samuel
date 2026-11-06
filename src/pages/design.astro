@@ -92,7 +92,7 @@ const raios = [...tokensCss.matchAll(/--(raio-[\w-]+):\s*([^;]+);\s*\/\*\s*([^*]
 const fontesTitulo = ['h1 de página', 'h2 de seção', 'título de projeto e de cartão', 'título do certificado', 'ano das certificações', 'painel fixo do celular'];
 const fontesMono = ['prompt e menu', 'rótulos, datas e períodos', 'stack, chamada e código', 'números grandes do topo', 'corpo de texto', 'nome na home (a linha digitada do terminal)'];
 // Amostra de cada tamanho da escala: os de título usam Inter Tight
-const classeTipo: Record<string, string> = { 'titulo-pagina': 'ds-tipo--h1', ano: 'ds-tipo--h1', secao: 'ds-tipo--h2', cartao: 'ds-tipo--cartao', 'cartao-azul': 'ds-tipo--cartao' };
+const classeTipo: Record<string, string> = { 'titulo-pagina': 'ds-tipo--h1', ano: 'ds-tipo--h1', secao: 'ds-tipo--h2', cartao: 'ds-tipo--cartao' };
 const movimentos = [
   { token: 'dur-media', ease: 'ease-padrao', rotulo: 'interface' },
   { token: 'dur-a0-caos', ease: 'ease-caos', rotulo: 'A0 · caos' },
@@ -585,19 +585,18 @@ const resumoCertificados = resumir(certificadosReais);
         Modelo P4: um grupo por mês de <code class="ds-codigo-inline">inicio</code>, o mais recente primeiro, sem linha ligando os cartões
         (<code class="ds-codigo-inline">ListaProjetos.astro</code>, <code class="ds-codigo-inline">.grupo-mes--projetos</code>). O cartão inteiro é o
         link (<code class="ds-codigo-inline">.cartao-projeto</code>, <code class="ds-codigo-inline">--raio-cartao</code>); chamada opcional some sem
-        dado. <code class="ds-codigo-inline">--destaque</code> = maior, com ★; <code class="ds-codigo-inline">--azul</code> = o mais recente, com
-        texto branco ({razao('branco', 'azul')}:1). Os dois são independentes: um projeto novo sem destaque fica azul no tamanho normal.
+        dado. Todos os cartões têm o mesmo tamanho: o destaque é só a ★, e <code class="ds-codigo-inline">--azul</code> = o mais recente, com
+        texto branco ({razao('branco', 'azul')}:1).
       </p>
       <table class="ds-tabela">
-        <caption class="sr-only">Lista de projetos: colunas ocupadas pelo cartão em cada largura</caption>
+        <caption class="sr-only">Lista de projetos: posição do mês e colunas de cartões em cada largura</caption>
         <thead>
-          <tr><th scope="col">largura</th><th scope="col">mês</th><th scope="col">normal</th><th scope="col">★</th></tr>
+          <tr><th scope="col">largura</th><th scope="col">mês</th><th scope="col">colunas de cartões</th></tr>
         </thead>
         <tbody>
-          <tr><th scope="row">até 1023 px</th><td>em cima</td><td>1 de 1</td><td>1 de 1</td></tr>
-          <tr><th scope="row">1024–1279 px</th><td>à esquerda</td><td>3 de 6</td><td>6 de 6</td></tr>
-          <tr><th scope="row">1280–1439 px</th><td>à esquerda</td><td>3 de 6</td><td>3 de 6</td></tr>
-          <tr><th scope="row">a partir de 1440 px</th><td>à esquerda</td><td>2 de 6</td><td>3 de 6</td></tr>
+          <tr><th scope="row">até 1023 px</th><td>em cima</td><td>1</td></tr>
+          <tr><th scope="row">1024–1439 px</th><td>à esquerda</td><td>2</td></tr>
+          <tr><th scope="row">a partir de 1440 px</th><td>à esquerda</td><td>3</td></tr>
         </tbody>
       </table>
       <ListaProjetos projetos={projetosRecentes} />
@@ -687,7 +686,7 @@ const resumoCertificados = resumir(certificadosReais);
         <p class="linha-resumo" aria-hidden="true">&gt; <TextoSeta texto={linhaProjetos} /></p>
         <div class="cabeca-pagina__linha">
           <p class="titulo-pagina" role="presentation">projetos</p>
-          <p class="lead cabeca-pagina__lead cabeca-pagina__lead--sempre cabeca-pagina__lead--lado">Do mais recente (em azul) para o mais antigo. Os cartões maiores (★) são os destaques.</p>
+          <p class="lead cabeca-pagina__lead cabeca-pagina__lead--sempre cabeca-pagina__lead--lado">Do mais recente (em azul) para o mais antigo. Os marcados com ★ são os destaques.</p>
         </div>
       </header>
       <header class="cabeca-pagina">

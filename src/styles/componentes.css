@@ -1406,9 +1406,9 @@ a.canal:hover,
 }
 
 /* ── Lista de projetos (P4): meses e cartões ────────────────────────── */
-/* Reaproveita o .grupo-mes das certificações. Até 1023 px: cabeçalho do mês em cima e uma coluna. A partir de
-   1024 px: rótulo à esquerda e grade de 6 colunas. A largura do cartão muda em 3 degraus para a linha de cima e a
-   stack caberem sem quebrar; só em 1440 há espaço para o desenho do P4 (normal em 2 colunas, ★ em 3). */
+/* Reaproveita o .grupo-mes das certificações. Todos os cartões têm o mesmo tamanho: o destaque é marcado só pela ★.
+   Até 1023 px: cabeçalho do mês em cima e 1 coluna. De 1024 a 1439: rótulo à esquerda e 2 colunas.
+   A partir de 1440: 3 colunas de 352 px. */
 
 .lista-meses {
   display: flex;
@@ -1445,15 +1445,7 @@ a.canal:hover,
   }
 
   .grupo-mes--projetos .grupo-mes__lista {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .grupo-mes--projetos .grupo-mes__lista > li {
-    grid-column: span 3;
-  }
-
-  .grupo-mes--projetos .grupo-mes__lista > .grupo-mes__item--destaque {
-    grid-column: span 6;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1464,28 +1456,23 @@ a.canal:hover,
   }
 }
 
-@media (min-width: 1280px) {
-  .grupo-mes--projetos .grupo-mes__lista > .grupo-mes__item--destaque {
-    grid-column: span 3;
-  }
-}
-
+/* desktop: com o rótulo em 176 px, cada cartão ganha 14 px e título e stack cabem em 1 linha, com a mesma altura em todos */
 @media (min-width: 1440px) {
-  .grupo-mes--projetos .grupo-mes__lista > li {
-    grid-column: span 2;
+  .grupo-mes--projetos {
+    --largura-rotulo-mes: 11rem;
+  }
+
+  .grupo-mes--projetos .grupo-mes__lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-/* Cartão de projeto: o cartão inteiro é o link. As medidas ficam em variáveis locais porque destaque e azul se combinam. */
+/* Cartão de projeto: o cartão inteiro é o link */
 .cartao-projeto {
-  --respiro: var(--esp-4);
-  --vao: var(--esp-2);
-  --seta-caixa: 1.75rem;
-  --seta-icone: 1.25rem;
   display: flex;
   align-items: center;
   gap: var(--esp-3);
-  padding: var(--respiro);
+  padding: var(--esp-4);
   background: var(--cor-painel);
   border: var(--borda);
   border-radius: var(--raio-cartao);
@@ -1504,16 +1491,8 @@ a.canal:hover,
   border-radius: var(--raio-cartao);
 }
 
-.cartao-projeto--destaque {
-  --respiro: calc(var(--esp-4) + var(--esp-1));
-  --vao: var(--esp-3);
-  --seta-caixa: 2rem;
-  --seta-icone: 1.375rem;
-}
-
 /* texto branco: o #E6EDF3 da página reprova sobre o azul (3,92:1). A borda azul mantém o tamanho do cartão vizinho */
 .cartao-projeto--azul {
-  --seta-caixa: 2.25rem;
   --cor-estrela: var(--cor-texto-sobre-azul);
   background: var(--cor-azul);
   border-color: var(--cor-azul);
@@ -1529,7 +1508,7 @@ a.canal:hover,
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--vao);
+  gap: var(--esp-2);
   min-width: 0;
 }
 
@@ -1567,23 +1546,10 @@ a.canal:hover,
   overflow-wrap: break-word;
 }
 
-.cartao-projeto--destaque .cartao-projeto__titulo {
-  font-size: var(--texto-secao);
-  line-height: 1.08;
-}
-
-.cartao-projeto--destaque.cartao-projeto--azul .cartao-projeto__titulo {
-  font-size: var(--texto-cartao-azul);
-}
-
 .cartao-projeto__chamada {
   font-size: var(--texto-nav);
   font-weight: var(--peso-forte);
   line-height: var(--entrelinha-media);
-}
-
-.cartao-projeto--destaque .cartao-projeto__chamada {
-  font-size: var(--texto-lead);
 }
 
 .cartao-projeto__stack {
@@ -1597,8 +1563,8 @@ a.canal:hover,
   display: grid;
   place-items: center;
   flex: none;
-  width: var(--seta-caixa);
-  height: var(--seta-caixa);
+  width: 1.75rem;
+  height: 1.75rem;
   color: var(--cor-azul-claro);
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1606,8 +1572,8 @@ a.canal:hover,
 }
 
 .cartao-projeto__seta .icone {
-  width: var(--seta-icone);
-  height: var(--seta-icone);
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .cartao-projeto:hover .cartao-projeto__seta {
@@ -1615,6 +1581,8 @@ a.canal:hover,
 }
 
 .cartao-projeto--azul .cartao-projeto__seta {
+  width: 2rem;
+  height: 2rem;
   background: var(--cor-texto-sobre-azul);
   border-radius: var(--raio-ponto);
   color: var(--cor-azul);
@@ -1627,30 +1595,14 @@ a.canal:hover,
   color: var(--cor-texto-sobre-azul);
 }
 
-/* no celular a linha de cima do azul é a mais longa do site (★ + tipo + período): 12 px, como no desenho */
+/* a linha de cima do azul é a mais longa do site (★ + tipo + período): em 12 px ela cabe no cartão de 338 px */
 .cartao-projeto--azul .cartao-projeto__meta {
   font-size: var(--texto-micro);
 }
 
-@media (min-width: 768px) {
-  .cartao-projeto--azul .cartao-projeto__meta {
-    font-size: var(--texto-rotulo);
-  }
-}
-
 @media (min-width: 1024px) {
   .cartao-projeto {
-    --respiro: calc(var(--esp-4) + var(--esp-1));
-  }
-
-  .cartao-projeto--destaque {
-    --respiro: var(--esp-5);
-    --seta-caixa: var(--alvo-toque);
-    --seta-icone: 1.5rem;
-  }
-
-  .cartao-projeto--azul.cartao-projeto--destaque {
-    --seta-icone: 1.375rem;
+    padding: calc(var(--esp-4) + var(--esp-1));
   }
 }
 

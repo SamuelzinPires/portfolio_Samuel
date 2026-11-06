@@ -1,7 +1,7 @@
 ---
 // Cartão de um projeto (modelo P4): o cartão inteiro é o link. Em cima, nº · tipo e período; depois o título, a
 // chamada (opcional: sem ela a linha some) e a stack com 3 + "+N".
-// `destaque` no frontmatter = cartão maior com ★. `azul` = o mais recente da lista; os dois são independentes.
+// Todos os cartões têm o mesmo tamanho: `destaque` no frontmatter só acrescenta a ★, e `azul` é o mais recente da lista.
 import { periodo } from '../../lib/datas';
 import { resumirStack, type Projeto } from '../../lib/projetos';
 import Icone from '../Icone.astro';
@@ -16,10 +16,7 @@ const { projeto, azul = false } = Astro.props;
 const { titulo, tipo, inicio, fim, chamada, stack, destaque } = projeto.data;
 ---
 
-<a
-  class:list={['cartao-projeto', destaque && 'cartao-projeto--destaque', azul && 'cartao-projeto--azul']}
-  href={`/projetos/${projeto.id}`}
->
+<a class:list={['cartao-projeto', azul && 'cartao-projeto--azul']} href={`/projetos/${projeto.id}`}>
   <div class="cartao-projeto__corpo">
     <p class="cartao-projeto__meta">
       <span class="cartao-projeto__tipo">
