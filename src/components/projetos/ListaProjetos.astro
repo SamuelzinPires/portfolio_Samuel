@@ -1,0 +1,43 @@
+---
+// Lista de projetos (modelo P4): um grupo por mês de `inicio`, o mais recente primeiro. É HTML puro, sem JavaScript:
+// um .md novo em src/content/projetos entra no mês certo no build, sem mexer aqui.
+// Na V2 (Parte 4) esta lista vira o "ver como lista" do mapa Z3.
+import { agruparPorMes, contarProjetos, type Projeto } from '../../lib/projetos';
+import CartaoProjeto from './CartaoProjeto.astro';
+
+interface Props {
+  /** Do mais recente ao mais antigo. */
+  projetos: Projeto[];
+}
+
+const { projetos } = Astro.props;
+const meses = agruparPorMes(projetos);
+const maisRecente = projetos[0]?.id;
+// o prefixo evita id repetido na /design, que mostra esta lista junto com a de certificados
+const idMes = (chave: string) => `projetos-${chave}`;
+---
+
+<div class="lista-meses">
+  {
+    meses.map((m) => (
+      <section class="grupo-mes grupo-mes--projetos" aria-labelledby={idMes(m.chave)}>
+        <header class="grupo-mes__rotulo">
+          <h2 class="grupo-mes__nome" id={idMes(m.chave)}>
+            <span aria-hidden="true">
+              {m.ano} · <span class="grupo-mes__mes">{m.nome}</span>
+            </span>
+            <span class="sr-only">{m.nomeCompleto}</span>
+          </h2>
+          <span class="grupo-mes__contagem">{contarProjetos(m.projetos.length)}</span>
+        </header>
+        <ul class="grupo-mes__lista" role="list">
+          {m.projetos.map((p) => (
+            <li class:list={[p.data.destaque && 'grupo-mes__item--destaque']}>
+              <CartaoProjeto projeto={p} azul={p.id === maisRecente} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>

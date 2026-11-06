@@ -232,7 +232,7 @@
   display: none; /* só a partir de 768 px: no celular a lista vem logo abaixo do título */
 }
 
-/* certificações e contato mostram a frase de apoio também no celular (como no desenho) */
+/* projetos, certificações e contato mostram a frase de apoio também no celular (como no desenho) */
 .cabeca-pagina__lead.cabeca-pagina__lead--sempre {
   display: block;
 }
@@ -248,7 +248,7 @@
   }
 }
 
-/* "> 11 certificados · ago → out/2026": a linha azul acima do título (certificações; a lista de projetos na 6b.4) */
+/* "> 11 certificados · ago → out/2026": a linha azul acima do título (certificações e lista de projetos) */
 .linha-resumo {
   font-size: var(--texto-rotulo);
   color: var(--cor-link);
@@ -282,9 +282,14 @@
   }
 
   .cabeca-pagina__lead--lado {
-    max-width: 30rem;
+    max-width: 31.5rem;
     padding-bottom: var(--esp-2);
   }
+}
+
+/* lista de projetos: mais ar entre o topo e o primeiro mês (P4: 40 → 72 px) */
+.cabeca-pagina.cabeca-pagina--lista {
+  padding-bottom: var(--esp-secao-base);
 }
 
 /* "> SELECT * FROM projetos;" */
@@ -299,10 +304,6 @@
   color: var(--cor-ok);
 }
 
-.consulta__extra {
-  display: none;
-}
-
 @media (min-width: 768px) {
   .cabeca-pagina {
     gap: var(--esp-4);
@@ -315,10 +316,6 @@
 
   .consulta {
     font-size: var(--texto-lead);
-  }
-
-  .consulta__extra {
-    display: inline;
   }
 }
 
@@ -955,209 +952,12 @@ button.barra-dado {
   color: var(--cor-metodo-delete);
 }
 
-/* ── Lista de projetos ─────────────────────────────────────────────── */
-/* Celular e tablet: linhas empilhadas. A partir de 1024: tabela de 7 colunas. */
-
-.lista-projetos {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: var(--borda);
-}
-
-.lista-projetos__cabeca {
-  display: none;
-}
-
-.lista-projetos__linha {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    'num tipo periodo'
-    'nome nome nome'
-    'stack stack stack'
-    'destaque destaque destaque';
-  gap: var(--esp-1) var(--esp-2);
-  padding: var(--esp-4) 0;
-  border-bottom: var(--borda);
-  color: var(--cor-texto);
-  text-decoration: none;
-  font-size: var(--texto-rotulo);
-  transition: background-color var(--dur-rapida) var(--ease-padrao);
-}
-
-.lista-projetos__linha:hover {
-  background: var(--cor-codigo-fundo);
-  color: var(--cor-texto);
-}
-
-.lista-projetos__num {
-  grid-area: num;
-  color: var(--cor-apagado);
-}
-
-.lista-projetos__tipo {
-  grid-area: tipo;
-  color: var(--cor-apagado);
-}
-
-.lista-projetos__tipo::before {
-  content: '· ';
-}
-
-.lista-projetos__periodo {
-  grid-area: periodo;
-  text-align: right;
-}
-
-.lista-projetos__periodo--andamento {
-  color: var(--cor-ok);
-}
-
-.lista-projetos__nome {
-  grid-area: nome;
-  display: flex;
-  align-items: center;
-  gap: var(--esp-2);
-  padding-right: var(--esp-6); /* espaço da seta, que no celular fica presa à direita */
-  font-family: var(--fonte-titulo);
-  font-size: var(--texto-cartao);
-  font-weight: var(--peso-forte);
-  line-height: var(--entrelinha-secao);
-  letter-spacing: var(--tracking-cartao);
-}
-
-.lista-projetos__stack {
-  grid-area: stack;
-}
-
-.lista-projetos__destaque {
-  grid-area: destaque;
-  color: var(--cor-apagado);
-}
-
-.lista-projetos__acao {
-  position: absolute;
-  right: var(--esp-2);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--cor-azul-claro);
-  font-size: var(--texto-base);
-}
-
-.lista-projetos__acao-texto {
-  display: none;
-}
-
+/* ★ de projeto em destaque (cartão de projeto, painel do celular) */
 .estrela {
   width: 13px;
   height: 13px;
   flex: none;
   color: var(--cor-estrela);
-}
-
-.estrela--vazia {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .lista-projetos__cabeca,
-  .lista-projetos__linha {
-    display: grid;
-    /* proporções do desenho (1440): projeto 306 · tipo 150 · período 160 · stack 314 · destaque 228 */
-    grid-template-columns: 3rem minmax(0, 2fr) minmax(0, 0.95fr) minmax(0, 1fr) minmax(0, 2.1fr) minmax(0, 1.5fr) 5rem;
-    grid-template-areas: 'num nome tipo periodo stack destaque acao';
-    align-items: center;
-    gap: var(--esp-4);
-  }
-
-  .lista-projetos__cabeca {
-    padding: var(--esp-3) 0;
-    border-bottom: var(--borda);
-    font-size: var(--texto-rotulo);
-    color: var(--cor-apagado);
-  }
-
-  .lista-projetos__linha {
-    padding: var(--esp-5) 0;
-    font-size: var(--texto-nav);
-  }
-
-  .lista-projetos__tipo::before {
-    content: none;
-  }
-
-  .lista-projetos__periodo {
-    text-align: left;
-  }
-
-  .lista-projetos__nome {
-    padding-right: 0;
-  }
-
-  .lista-projetos__acao {
-    position: static;
-    grid-area: acao;
-    transform: none;
-    text-align: right;
-    font-size: var(--texto-nav);
-    font-weight: var(--peso-medio);
-  }
-
-  .lista-projetos__acao-texto {
-    display: inline;
-  }
-
-  .lista-projetos__linha:hover .lista-projetos__acao {
-    color: var(--cor-texto);
-    text-decoration: underline;
-  }
-
-  .estrela--vazia {
-    display: block;
-    visibility: hidden;
-  }
-}
-
-/* Contador do topo (celular) e rodapé da lista (desktop, com a legenda da estrela) */
-.contador--topo {
-  padding-bottom: var(--esp-4);
-}
-
-.lista-projetos-rodape {
-  display: none;
-}
-
-.legenda-estrela {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--texto-rotulo);
-  color: var(--cor-apagado);
-}
-
-.legenda-estrela .estrela {
-  width: 12px;
-  height: 12px;
-}
-
-@media (min-width: 1024px) {
-  .contador--topo {
-    display: none;
-  }
-
-  .lista-projetos-rodape {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: var(--esp-4);
-  }
-
-  /* o cabeçalho de colunas já tem a linha de baixo */
-  .lista-projetos {
-    border-top: 0;
-  }
 }
 
 .alternador {
@@ -1182,11 +982,6 @@ button.barra-dado {
 .alternador__opcao[aria-current='page'] {
   background: var(--cor-botao-fundo);
   color: var(--cor-botao-texto);
-}
-
-.contador {
-  font-size: var(--texto-rotulo);
-  color: var(--cor-azul-claro);
 }
 
 /* ── Celular ───────────────────────────────────────────────────────── */
@@ -1359,7 +1154,7 @@ a.canal:hover,
 /* Ano → mês → cartão, o mais recente primeiro. O ano é um <details> (só o mais recente nasce aberto, os outros são
    uma linha recolhida); o mês é um grupo com um filete em cima. O espaço dentro do mês é curto e entre meses é
    maior: é ele, e não uma linha ligando os cartões, que mostra a ordem. O rótulo do mês fica à esquerda a partir de
-   1024 px e vira cabeçalho abaixo disso. O grupo de mês serve também à lista de projetos (6b.4). */
+   1024 px e vira cabeçalho abaixo disso. O grupo de mês serve também à lista de projetos. */
 
 .certificados {
   display: flex;
@@ -1590,7 +1385,7 @@ a.canal:hover,
   color: var(--cor-link-hover);
 }
 
-/* "● fim da lista · 11 certificados": fecha uma lista longa (certificações; a lista de projetos na 6b.4) */
+/* "● fim da lista · 11 certificados": fecha uma lista longa (certificações e lista de projetos) */
 .fim-lista {
   display: flex;
   align-items: center;
@@ -1608,6 +1403,255 @@ a.canal:hover,
   height: 0.5rem;
   border-radius: var(--raio-ponto);
   background: var(--cor-ok);
+}
+
+/* ── Lista de projetos (P4): meses e cartões ────────────────────────── */
+/* Reaproveita o .grupo-mes das certificações. Até 1023 px: cabeçalho do mês em cima e uma coluna. A partir de
+   1024 px: rótulo à esquerda e grade de 6 colunas. A largura do cartão muda em 3 degraus para a linha de cima e a
+   stack caberem sem quebrar; só em 1440 há espaço para o desenho do P4 (normal em 2 colunas, ★ em 3). */
+
+.lista-meses {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-mes);
+}
+
+.lista-meses + .fim-lista {
+  margin-top: var(--esp-mes);
+}
+
+/* "2026 · ago": o h2 aqui é rótulo de log, não título, então volta para a mono */
+.grupo-mes--projetos .grupo-mes__nome {
+  font-family: var(--fonte-mono);
+  font-weight: var(--peso-normal);
+  letter-spacing: 0;
+  color: var(--cor-apagado);
+}
+
+.grupo-mes__mes {
+  font-weight: var(--peso-forte);
+  color: var(--cor-texto);
+}
+
+.grupo-mes--projetos .grupo-mes__lista {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .grupo-mes--projetos {
+    grid-template-areas: 'rotulo lista'; /* sem a linha do "ver os outros N": nenhum mês de projetos é recolhido */
+    row-gap: 0;
+    padding-top: calc(var(--esp-5) + var(--esp-1));
+  }
+
+  .grupo-mes--projetos .grupo-mes__lista {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .grupo-mes--projetos .grupo-mes__lista > li {
+    grid-column: span 3;
+  }
+
+  .grupo-mes--projetos .grupo-mes__lista > .grupo-mes__item--destaque {
+    grid-column: span 6;
+  }
+}
+
+/* notebook: o rótulo "2026 · ago" cabe em 140 px, e os 78 px que sobram evitam a stack em 2 linhas */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .grupo-mes--projetos {
+    --largura-rotulo-mes: 8.75rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .grupo-mes--projetos .grupo-mes__lista > .grupo-mes__item--destaque {
+    grid-column: span 3;
+  }
+}
+
+@media (min-width: 1440px) {
+  .grupo-mes--projetos .grupo-mes__lista > li {
+    grid-column: span 2;
+  }
+}
+
+/* Cartão de projeto: o cartão inteiro é o link. As medidas ficam em variáveis locais porque destaque e azul se combinam. */
+.cartao-projeto {
+  --respiro: var(--esp-4);
+  --vao: var(--esp-2);
+  --seta-caixa: 1.75rem;
+  --seta-icone: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+  padding: var(--respiro);
+  background: var(--cor-painel);
+  border: var(--borda);
+  border-radius: var(--raio-cartao);
+  color: var(--cor-texto);
+  text-decoration: none;
+  transition: border-color var(--dur-rapida) var(--ease-padrao);
+}
+
+.cartao-projeto:hover {
+  border-color: var(--cor-azul-claro);
+  color: var(--cor-texto);
+}
+
+/* o anel de foco acompanha o raio do cartão */
+.cartao-projeto:focus-visible {
+  border-radius: var(--raio-cartao);
+}
+
+.cartao-projeto--destaque {
+  --respiro: calc(var(--esp-4) + var(--esp-1));
+  --vao: var(--esp-3);
+  --seta-caixa: 2rem;
+  --seta-icone: 1.375rem;
+}
+
+/* texto branco: o #E6EDF3 da página reprova sobre o azul (3,92:1). A borda azul mantém o tamanho do cartão vizinho */
+.cartao-projeto--azul {
+  --seta-caixa: 2.25rem;
+  --cor-estrela: var(--cor-texto-sobre-azul);
+  background: var(--cor-azul);
+  border-color: var(--cor-azul);
+  color: var(--cor-texto-sobre-azul);
+}
+
+.cartao-projeto--azul:hover {
+  border-color: var(--cor-texto-sobre-azul);
+  color: var(--cor-texto-sobre-azul);
+}
+
+.cartao-projeto__corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--vao);
+  min-width: 0;
+}
+
+.cartao-projeto__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0 var(--esp-3);
+  font-size: var(--texto-rotulo);
+  line-height: var(--entrelinha-media);
+}
+
+.cartao-projeto__tipo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cor-apagado);
+}
+
+.cartao-projeto__periodo {
+  font-weight: var(--peso-forte);
+}
+
+.cartao-projeto__periodo--andamento {
+  color: var(--cor-ok);
+}
+
+.cartao-projeto__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-cartao);
+  font-weight: var(--peso-forte);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-cartao);
+  overflow-wrap: break-word;
+}
+
+.cartao-projeto--destaque .cartao-projeto__titulo {
+  font-size: var(--texto-secao);
+  line-height: 1.08;
+}
+
+.cartao-projeto--destaque.cartao-projeto--azul .cartao-projeto__titulo {
+  font-size: var(--texto-cartao-azul);
+}
+
+.cartao-projeto__chamada {
+  font-size: var(--texto-nav);
+  font-weight: var(--peso-forte);
+  line-height: var(--entrelinha-media);
+}
+
+.cartao-projeto--destaque .cartao-projeto__chamada {
+  font-size: var(--texto-lead);
+}
+
+.cartao-projeto__stack {
+  font-size: var(--texto-rotulo);
+  line-height: var(--entrelinha-media);
+  color: var(--cor-apagado);
+}
+
+/* faixa de largura fixa: a seta fica no mesmo prumo em todos os cartões */
+.cartao-projeto__seta {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--seta-caixa);
+  height: var(--seta-caixa);
+  color: var(--cor-azul-claro);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--dur-rapida) var(--ease-padrao);
+}
+
+.cartao-projeto__seta .icone {
+  width: var(--seta-icone);
+  height: var(--seta-icone);
+}
+
+.cartao-projeto:hover .cartao-projeto__seta {
+  transform: translateX(3px);
+}
+
+.cartao-projeto--azul .cartao-projeto__seta {
+  background: var(--cor-texto-sobre-azul);
+  border-radius: var(--raio-ponto);
+  color: var(--cor-azul);
+}
+
+/* no azul, tudo é branco: o apagado reprova sobre esse fundo */
+.cartao-projeto--azul .cartao-projeto__tipo,
+.cartao-projeto--azul .cartao-projeto__periodo,
+.cartao-projeto--azul .cartao-projeto__stack {
+  color: var(--cor-texto-sobre-azul);
+}
+
+/* no celular a linha de cima do azul é a mais longa do site (★ + tipo + período): 12 px, como no desenho */
+.cartao-projeto--azul .cartao-projeto__meta {
+  font-size: var(--texto-micro);
+}
+
+@media (min-width: 768px) {
+  .cartao-projeto--azul .cartao-projeto__meta {
+    font-size: var(--texto-rotulo);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cartao-projeto {
+    --respiro: calc(var(--esp-4) + var(--esp-1));
+  }
+
+  .cartao-projeto--destaque {
+    --respiro: var(--esp-5);
+    --seta-caixa: var(--alvo-toque);
+    --seta-icone: 1.5rem;
+  }
+
+  .cartao-projeto--azul.cartao-projeto--destaque {
+    --seta-icone: 1.375rem;
+  }
 }
 
 /* ── Contato em DAG (K3): você → canal → Samuel ────────────────────── */

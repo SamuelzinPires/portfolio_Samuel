@@ -8,8 +8,9 @@ import Certificados from '../components/certificados/Certificados.astro';
 import ContatoDag from '../components/contato/ContatoDag.astro';
 import EmailTexto from '../components/EmailTexto.astro';
 import PecaAssinatura from '../components/pecas/PecaAssinatura.astro';
+import ListaProjetos from '../components/projetos/ListaProjetos.astro';
 import { carregarCertificados, resumir } from '../lib/certificados';
-import { carregarProjetos } from '../lib/projetos';
+import { carregarProjetos, contarProjetos, resumirProjetos } from '../lib/projetos';
 import Icone from '../components/Icone.astro';
 import TextoSeta from '../components/TextoSeta.astro';
 import Base from '../layouts/Base.astro';
@@ -39,7 +40,7 @@ const azul = hexDe('azul');
 
 const usos: Record<string, string> = {
   fundo: 'fundo da página',
-  painel: 'código, linha em hover, painel do celular',
+  painel: 'código, cartões, painel do celular',
   linha: 'bordas e divisórias (decorativo)',
   texto: 'texto principal',
   apagado: 'texto secundário, rótulos',
@@ -64,7 +65,7 @@ const papeis = [...tokensCss.matchAll(/--cor-([\w-]+):\s*var\(--cor-([\w-]+)\);/
 
 // Pares de texto usados pelos componentes novos
 const pares = [
-  { texto: 'texto', fundo: 'painel', onde: 'código, linha da lista em hover, painel do celular' },
+  { texto: 'texto', fundo: 'painel', onde: 'código, cartões, painel do celular' },
   { texto: 'apagado', fundo: 'painel', onde: 'rótulos dentro do painel e do código' },
   { texto: 'azul-claro', fundo: 'painel', onde: 'links e "verificar" sobre o painel' },
   { texto: 'ambar', fundo: 'fundo', onde: 'falha, método PUT, ★ destaque' },
@@ -80,7 +81,7 @@ const escala = [
 ].map(([, nome, min, max, uso]) => ({ nome, min, max, uso: uso ?? '' }));
 
 const espacos = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-const espacosFluidos = ['secao', 'secao-topo', 'secao-base', 'gap-colunas'];
+const espacosFluidos = ['secao', 'secao-topo', 'secao-base', 'mes', 'gap-colunas'];
 // Raios: valor e "onde usa" saem do próprio tokens.css (o comentário de cada linha), sem repetir aqui
 const raios = [...tokensCss.matchAll(/--(raio-[\w-]+):\s*([^;]+);\s*\/\*\s*([^*]+?)\s*\*\//g)].map(([, token, valor, onde]) => ({
   token,
@@ -91,7 +92,7 @@ const raios = [...tokensCss.matchAll(/--(raio-[\w-]+):\s*([^;]+);\s*\/\*\s*([^*]
 const fontesTitulo = ['h1 de página', 'h2 de seção', 'título de projeto e de cartão', 'título do certificado', 'ano das certificações', 'painel fixo do celular'];
 const fontesMono = ['prompt e menu', 'rótulos, datas e períodos', 'stack, chamada e código', 'números grandes do topo', 'corpo de texto', 'nome na home (a linha digitada do terminal)'];
 // Amostra de cada tamanho da escala: os de título usam Inter Tight
-const classeTipo: Record<string, string> = { 'titulo-pagina': 'ds-tipo--h1', ano: 'ds-tipo--h1', secao: 'ds-tipo--h2', cartao: 'ds-tipo--cartao' };
+const classeTipo: Record<string, string> = { 'titulo-pagina': 'ds-tipo--h1', ano: 'ds-tipo--h1', secao: 'ds-tipo--h2', cartao: 'ds-tipo--cartao', 'cartao-azul': 'ds-tipo--cartao' };
 const movimentos = [
   { token: 'dur-media', ease: 'ease-padrao', rotulo: 'interface' },
   { token: 'dur-a0-caos', ease: 'ease-caos', rotulo: 'A0 · caos' },
@@ -121,15 +122,14 @@ const endpoints = [
   { metodo: 'put', rota: '/vagas/{id}' },
   { metodo: 'delete', rota: '/vagas/{id}' },
 ];
-const linhas = [
-  { num: '008', nome: 'Airflow ETL Orchestration', tipo: 'orquestração', periodo: 'ago/2026 → hoje', andamento: true, stack: 'Airflow 3 · Postgres · Pandera +3', destaque: '289 dias de dados · CI verde', estrela: true },
-  { num: '007', nome: 'Data Quality Engineering', tipo: 'qualidade', periodo: 'ago/2026', stack: 'DuckDB · Pandera · Pandas +1', destaque: '6 regras · 541 mil linhas', estrela: true },
-  { num: '005', nome: 'Northwind SQL Analytics', tipo: 'sql', periodo: 'jun/2026', stack: 'PostgreSQL · Docker · PgAdmin +1', destaque: '7 views de negócio', estrela: false },
-];
 
 // Peças-assinatura: a galeria usa as peças reais dos projetos (dados do frontmatter), uma de cada tipo
 const todosProjetos = await carregarProjetos();
 const pecasDosProjetos = todosProjetos.filter((p) => p.data.peca);
+
+// Lista de projetos: o mesmo componente da página, com os projetos reais
+const projetosRecentes = [...todosProjetos].reverse();
+const linhaProjetos = resumirProjetos(projetosRecentes);
 
 // Certificações: a galeria usa os certificados reais. A escala (30 certificados em 2 anos, com um mês acima do
 // limite) é conferida numa página temporária do `npm run dev`, apagada antes do commit: dado de teste não fica no repo.
@@ -581,40 +581,27 @@ const resumoCertificados = resumir(certificadosReais);
 
     <section class="ds-secao" aria-labelledby="t-lista">
       <h2 id="t-lista"><span class="ds-num">12</span> lista de projetos</h2>
-      <p class="ds-apagado">Linhas empilhadas até 1023 px; tabela de 7 colunas a partir de 1024. A linha inteira é o link; passe o cursor ou use Tab.</p>
-      <div class="ds-lista-topo">
-        <span class="contador">3 registros · mais recente primeiro</span>
-        <nav class="alternador" aria-label="Visão da lista">
-          <a class="alternador__opcao" href="#t-lista">mapa</a>
-          <a class="alternador__opcao" href="#t-lista" aria-current="page">lista</a>
-        </nav>
-      </div>
-      <div>
-        <div class="lista-projetos__cabeca" aria-hidden="true">
-          <span>#</span><span>projeto</span><span>tipo</span><span>período</span><span>stack</span><span>destaque</span><span style="text-align: right">ação</span>
-        </div>
-        <ol class="lista-projetos" role="list">
-          {
-            linhas.map((l) => (
-              <li>
-                <a class="lista-projetos__linha" href="#t-lista">
-                  <span class="lista-projetos__num">{l.num}</span>
-                  <span class="lista-projetos__nome">
-                    <svg class:list={['estrela', !l.estrela && 'estrela--vazia']} viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z" fill="currentColor" /></svg>
-                    {l.nome}
-                    {l.estrela && <span class="sr-only">(em destaque)</span>}
-                  </span>
-                  <span class="lista-projetos__tipo">{l.tipo}</span>
-                  <span class:list={['lista-projetos__periodo', l.andamento && 'lista-projetos__periodo--andamento']}><TextoSeta texto={l.periodo} /></span>
-                  <span class="lista-projetos__stack">{l.stack}</span>
-                  <span class="lista-projetos__destaque">{l.destaque}</span>
-                  <span class="lista-projetos__acao" aria-hidden="true"><span class="lista-projetos__acao-texto">abrir </span><Icone nome="seta" class="icone--texto" /></span>
-                </a>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
+      <p class="ds-apagado">
+        Modelo P4: um grupo por mês de <code class="ds-codigo-inline">inicio</code>, o mais recente primeiro, sem linha ligando os cartões
+        (<code class="ds-codigo-inline">ListaProjetos.astro</code>, <code class="ds-codigo-inline">.grupo-mes--projetos</code>). O cartão inteiro é o
+        link (<code class="ds-codigo-inline">.cartao-projeto</code>, <code class="ds-codigo-inline">--raio-cartao</code>); chamada opcional some sem
+        dado. <code class="ds-codigo-inline">--destaque</code> = maior, com ★; <code class="ds-codigo-inline">--azul</code> = o mais recente, com
+        texto branco ({razao('branco', 'azul')}:1). Os dois são independentes: um projeto novo sem destaque fica azul no tamanho normal.
+      </p>
+      <table class="ds-tabela">
+        <caption class="sr-only">Lista de projetos: colunas ocupadas pelo cartão em cada largura</caption>
+        <thead>
+          <tr><th scope="col">largura</th><th scope="col">mês</th><th scope="col">normal</th><th scope="col">★</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">até 1023 px</th><td>em cima</td><td>1 de 1</td><td>1 de 1</td></tr>
+          <tr><th scope="row">1024–1279 px</th><td>à esquerda</td><td>3 de 6</td><td>6 de 6</td></tr>
+          <tr><th scope="row">1280–1439 px</th><td>à esquerda</td><td>3 de 6</td><td>3 de 6</td></tr>
+          <tr><th scope="row">a partir de 1440 px</th><td>à esquerda</td><td>2 de 6</td><td>3 de 6</td></tr>
+        </tbody>
+      </table>
+      <ListaProjetos projetos={projetosRecentes} />
+      <p class="fim-lista">fim da lista · {projetosRecentes.length} de {contarProjetos(projetosRecentes.length)}</p>
     </section>
 
     <section class="ds-secao" aria-labelledby="t-celular">
@@ -695,21 +682,21 @@ const resumoCertificados = resumir(certificadosReais);
 
     <section class="ds-secao" aria-labelledby="t-paginas">
       <h2 id="t-paginas"><span class="ds-num">16</span> páginas internas e erro</h2>
-      <p class="ds-apagado">Topo de /projetos, /certificações e /contato (o texto de apoio só aparece a partir de 768 px, menos em certificações e contato, que o mostram no celular com <code class="ds-codigo-inline">cabeca-pagina__lead--sempre</code>; os números do topo de certificações só a partir de 1024 px), legenda da lista e o nível de erro do log (404).</p>
+      <p class="ds-apagado">Topo de /projetos e /certificações (linha azul, título e, a partir de 1024 px, a frase de apoio ao lado), topo de /contato (linha de consulta) e o nível de erro do log (404).</p>
+      <header class="cabeca-pagina">
+        <p class="linha-resumo" aria-hidden="true">&gt; <TextoSeta texto={linhaProjetos} /></p>
+        <div class="cabeca-pagina__linha">
+          <p class="titulo-pagina" role="presentation">projetos</p>
+          <p class="lead cabeca-pagina__lead cabeca-pagina__lead--sempre cabeca-pagina__lead--lado">Do mais recente (em azul) para o mais antigo. Os cartões maiores (★) são os destaques.</p>
+        </div>
+      </header>
       <header class="cabeca-pagina">
         <p class="consulta" aria-hidden="true">
           <span class="consulta__prompt">&gt;</span>
-          <span>SELECT * FROM projetos<span class="consulta__extra"> ORDER BY inicio DESC</span>;</span>
+          <span>SELECT canal, endereco FROM contatos;</span>
         </p>
-        <p class="titulo-pagina" role="presentation">projetos</p>
-        <p class="lead cabeca-pagina__lead">Pipelines, APIs e análises de dados que construí em 2026. Cada linha abre o estudo de caso do projeto.</p>
+        <p class="titulo-pagina" role="presentation">contato</p>
       </header>
-      <p class="contador contador--topo">3 registros · mais recente primeiro</p>
-      <div class="lista-projetos-rodape ds-rodape-lista">
-        <span class="contador">3 registros</span>
-        <span class="legenda-estrela"><Icone nome="estrela" />= em destaque</span>
-      </div>
-      <p class="ds-apagado">O rodapé da lista (contador + legenda) aparece a partir de 1024 px; abaixo disso o contador sobe para o topo.</p>
       <ol class="log" role="list">
         <li><span class="log__hora">00:00:01</span><span class="log__nivel log__nivel--erro">ERRO</span><span>router</span><span class="log__msg">rota não encontrada</span></li>
       </ol>
@@ -768,7 +755,7 @@ const resumoCertificados = resumir(certificadosReais);
         (<code class="ds-codigo-inline">.linha-resumo</code>, azul-claro sobre o fundo): {razao('azul-claro', 'fundo')}:1.
       </p>
       <div class="ds-grupo">
-        <p class="ds-h3">linha azul acima do título (a mesma da lista de projetos na 6b.4)</p>
+        <p class="ds-h3">linha azul acima do título (a mesma da lista de projetos)</p>
         <p class="linha-resumo">&gt; <TextoSeta texto={resumoCertificados.linha} /></p>
       </div>
       <div class="ds-grupo">
@@ -1360,14 +1347,6 @@ const resumoCertificados = resumir(certificadosReais);
     font-size: var(--texto-nav);
   }
 
-  .ds-lista-topo {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--esp-3);
-  }
-
   .ds-celular {
     display: flex;
     flex-direction: column;
@@ -1431,12 +1410,5 @@ const resumoCertificados = resumir(certificadosReais);
   .ds-cursor-demo .cursor__anel {
     left: 14px;
     top: 14px;
-  }
-
-  /* o rodapé da lista só existe a partir de 1024 px; na galeria fica sempre visível */
-  .ds-rodape-lista {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
   }
 </style>

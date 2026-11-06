@@ -2,7 +2,7 @@
 // src/data/certificados.json: ele entra no ano e no mês certos, sozinho (mais recente primeiro).
 // Não existe campo de PDF (nem aqui nem no schema): o arquivo do certificado nunca é aberto nem hospedado.
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { diaMes, diaMesAno, diaMesNomeAno, isoDia, mesAno, nomeCompletoDoMes, nomeDoMes } from './datas';
+import { diaMes, diaMesAno, diaMesNomeAno, intervaloMeses, isoDia, nomeCompletoDoMes, nomeDoMes } from './datas';
 
 export type DadosCertificado = CollectionEntry<'certificados'>['data'];
 
@@ -89,14 +89,6 @@ export function resumir(certificados: Certificado[]) {
   const recente = certificados[0].conclusao;
   const antigo = certificados[n - 1].conclusao;
   const mesmoAno = recente.getUTCFullYear() === antigo.getUTCFullYear();
-  const mesmoMes = mesmoAno && recente.getUTCMonth() === antigo.getUTCMonth();
-
-  // "ago → out/2026" (um ano só), "ago/2025 → out/2026" (anos diferentes), "out/2026" (um mês só)
-  const periodoLinha = mesmoMes
-    ? mesAno(recente)
-    : mesmoAno
-      ? `${nomeDoMes(antigo)} → ${mesAno(recente)}`
-      : `${mesAno(antigo)} → ${mesAno(recente)}`;
 
   const emissores = [...new Set(certificados.map((c) => c.emissor))];
   const quem = emissores.length === 1 ? emissores[0] : `de ${emissores.slice(0, -1).join(', ')} e ${emissores.at(-1)}`;
@@ -106,7 +98,7 @@ export function resumir(certificados: Certificado[]) {
       : `entre ${mesmoAno ? diaMes(antigo) : diaMesAno(antigo)} e ${diaMesAno(recente)}`;
 
   return {
-    linha: `${contarCertificados(n)} · ${periodoLinha}`,
+    linha: `${contarCertificados(n)} · ${intervaloMeses(antigo, recente)}`,
     frase: `${contarCertificados(n)} ${quem}, ${n === 1 ? 'concluído' : 'concluídos'} ${quando}.`,
   };
 }

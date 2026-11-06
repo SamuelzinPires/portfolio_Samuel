@@ -1,0 +1,39 @@
+---
+// Cartão de um projeto (modelo P4): o cartão inteiro é o link. Em cima, nº · tipo e período; depois o título, a
+// chamada (opcional: sem ela a linha some) e a stack com 3 + "+N".
+// `destaque` no frontmatter = cartão maior com ★. `azul` = o mais recente da lista; os dois são independentes.
+import { periodo } from '../../lib/datas';
+import { resumirStack, type Projeto } from '../../lib/projetos';
+import Icone from '../Icone.astro';
+import TextoSeta from '../TextoSeta.astro';
+
+interface Props {
+  projeto: Projeto;
+  azul?: boolean;
+}
+
+const { projeto, azul = false } = Astro.props;
+const { titulo, tipo, inicio, fim, chamada, stack, destaque } = projeto.data;
+---
+
+<a
+  class:list={['cartao-projeto', destaque && 'cartao-projeto--destaque', azul && 'cartao-projeto--azul']}
+  href={`/projetos/${projeto.id}`}
+>
+  <div class="cartao-projeto__corpo">
+    <p class="cartao-projeto__meta">
+      <span class="cartao-projeto__tipo">
+        {destaque && <Icone nome="estrela" />}
+        <span>{projeto.numero} · {tipo}</span>
+        {destaque && <span class="sr-only">(em destaque)</span>}
+      </span>
+      <span class:list={['cartao-projeto__periodo', !fim && 'cartao-projeto__periodo--andamento']}>
+        <TextoSeta texto={periodo(inicio, fim)} />
+      </span>
+    </p>
+    <h3 class="cartao-projeto__titulo">{titulo}</h3>
+    {chamada && <p class="cartao-projeto__chamada"><TextoSeta texto={chamada} /></p>}
+    <p class="cartao-projeto__stack">{resumirStack(stack)}</p>
+  </div>
+  <span class="cartao-projeto__seta" aria-hidden="true"><Icone nome="seta" /></span>
+</a>

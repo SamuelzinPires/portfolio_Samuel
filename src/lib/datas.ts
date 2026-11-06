@@ -16,6 +16,13 @@ export function periodo(inicio: Date, fim?: Date, aberto = 'hoje'): string {
   return `${mes(inicio)}–${mes(fim)}/${ano(inicio)}`;
 }
 
+/** "ago → out/2026" (um ano só), "ago/2025 → out/2026" (anos diferentes) ou "out/2026" (um mês só). */
+export function intervaloMeses(inicio: Date, fim: Date): string {
+  if (ano(inicio) !== ano(fim)) return `${mesAno(inicio)} → ${mesAno(fim)}`;
+  if (mes(inicio) === mes(fim)) return mesAno(fim);
+  return `${mes(inicio)} → ${mesAno(fim)}`;
+}
+
 /** "03/08" */
 export const diaMes = (d: Date) => `${dois(d.getUTCDate())}/${dois(d.getUTCMonth() + 1)}`;
 

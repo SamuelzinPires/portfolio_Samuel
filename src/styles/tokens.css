@@ -32,7 +32,7 @@
   --cor-estrela: var(--cor-ambar);        /* ★ projeto em destaque */
   --cor-selecionado: var(--cor-texto);    /* anel/contorno do item aberto */
   --cor-dado: var(--cor-azul);            /* pontos e barras neutras (só preenchimento) */
-  --cor-codigo-fundo: var(--cor-painel);  /* bloco de código, linha em hover */
+  --cor-codigo-fundo: var(--cor-painel);  /* bloco de código */
   --cor-metodo-get: var(--cor-azul-claro);
   --cor-metodo-post: var(--cor-verde);
   --cor-metodo-put: var(--cor-ambar);
@@ -63,6 +63,7 @@
   --texto-titulo: clamp(2.5rem, 1.6643rem + 3.4286vw, 4.75rem);  /* 40 → 76 px · nome no A2 e no 404 (mono) */
   --texto-titulo-pagina: clamp(3.25rem, 2.2286rem + 4.1905vw, 6rem); /* 52 → 96 px · h1 de página (Inter Tight) */
   --texto-cartao: clamp(1.3125rem, 1.2893rem + 0.0952vw, 1.375rem); /* 21 → 22 px · título de projeto e de cartão (Inter Tight) */
+  --texto-cartao-azul: clamp(1.75rem, 1.6571rem + 0.381vw, 2rem); /* 28 → 32 px · título do cartão azul do destaque (Inter Tight) */
   --texto-numero: clamp(2.75rem, 2.3786rem + 1.5238vw, 3.75rem); /* 44 → 60 px · números grandes do topo */
   --texto-ano: clamp(2.75rem, 2.2857rem + 1.9048vw, 4rem);      /* 44 → 64 px · ano aberto nas certificações (Inter Tight) */
   --texto-secao: clamp(1.625rem, 1.4857rem + 0.5714vw, 2rem);    /* 26 → 32 px · h2 de seção, ano recolhido (Inter Tight) */
@@ -97,6 +98,7 @@
   --esp-secao: clamp(3rem, 1.1429rem + 7.619vw, 8rem);           /* 48 → 128 px · topo do hero */
   --esp-secao-topo: clamp(1.75rem, 1.4714rem + 1.1429vw, 2.5rem); /* 28 → 40 px · da linha da seção ao conteúdo */
   --esp-secao-base: clamp(2.75rem, 2.1rem + 2.6667vw, 4.5rem);    /* 44 → 72 px · fim de cada seção */
+  --esp-mes: clamp(2.5rem, 2.1286rem + 1.5238vw, 3.5rem);         /* 40 → 56 px · entre os meses da lista de projetos */
 
   /* ── Grade e colunas ───────────────────────────────────────────────── */
   --grade-colunas: 12;
@@ -155,10 +157,10 @@
    * então as media queries repetem estes números):
    *   celular   390 px  → estilos base (mobile-first)
    *   tablet    768 px  → @media (min-width: 768px)
-   *   notebook 1024 px  → @media (min-width: 1024px): tabela da lista e coluna lateral do projeto
+   *   notebook 1024 px  → @media (min-width: 1024px): rótulo do mês ao lado dos cartões e coluna lateral do projeto
    *   largo    1280 px  → @media (min-width: 1280px): painel de detalhe ao lado da peça-assinatura
    *                       (abaixo disso o painel desce para baixo da peça, que ganha a largura toda)
-   *   desktop  1440 px  → @media (min-width: 1440px)
+   *   desktop  1440 px  → @media (min-width: 1440px): cartão de projeto normal em 2 de 6 colunas
    * Entre eles, tipo e espaço já se ajustam sozinhos pelos clamp() acima.
    */
   --bp-celular: 390px;
