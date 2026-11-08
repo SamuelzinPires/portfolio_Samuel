@@ -6,14 +6,18 @@ import Certificados from '../components/certificados/Certificados.astro';
 import TextoSeta from '../components/TextoSeta.astro';
 import Pagina from '../layouts/Pagina.astro';
 import { carregarCertificados, contarCertificados, resumir } from '../lib/certificados';
+import { emAnos } from '../lib/datas';
 
 const certificados = await carregarCertificados();
 const resumo = resumir(certificados);
+// emissor e ano da descrição vêm dos dados (antes: "na DataCamp em 2026", digitado à mão)
+const emissores = [...new Set(certificados.map((c) => c.emissor))].join(' e ');
+const quando = emAnos(certificados.map((c) => c.conclusao));
 ---
 
 <Pagina
   titulo="Certificações — Samuel Pires de Miranda"
-  descricao="Certificados de Python, SQL, importação de dados, APIs, engenharia de dados e cloud que Samuel Pires de Miranda concluiu na DataCamp em 2026."
+  descricao={`Certificados ${emissores} de Python, SQL, importação de dados, APIs, engenharia de dados e cloud que Samuel Pires de Miranda concluiu ${quando}.`}
 >
   <header class="cabeca-pagina">
     {

@@ -23,6 +23,15 @@ export function intervaloMeses(inicio: Date, fim: Date): string {
   return `${mes(inicio)} → ${mesAno(fim)}`;
 }
 
+/** "em 2026" ou "entre 2025 e 2027", para as descrições das páginas (antes era "em 2026" digitado à mão). */
+export function emAnos(datas: Date[]): string {
+  if (datas.length === 0) return '';
+  const anos = datas.map(ano);
+  const primeiro = Math.min(...anos);
+  const ultimo = Math.max(...anos);
+  return primeiro === ultimo ? `em ${ultimo}` : `entre ${primeiro} e ${ultimo}`;
+}
+
 /** "03/08" */
 export const diaMes = (d: Date) => `${dois(d.getUTCDate())}/${dois(d.getUTCMonth() + 1)}`;
 

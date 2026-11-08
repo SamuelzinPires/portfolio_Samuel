@@ -4,16 +4,19 @@
 import ListaProjetos from '../../components/projetos/ListaProjetos.astro';
 import TextoSeta from '../../components/TextoSeta.astro';
 import Pagina from '../../layouts/Pagina.astro';
+import { emAnos } from '../../lib/datas';
 import { carregarProjetos, contarProjetos, resumirProjetos } from '../../lib/projetos';
 
 const projetos = (await carregarProjetos()).reverse();
 const total = projetos.length;
 const linha = resumirProjetos(projetos);
+// o ano da descrição vem das datas dos projetos (com um projeto de 2027, vira "entre 2026 e 2027")
+const quando = emAnos(projetos.flatMap((p) => (p.data.fim ? [p.data.inicio, p.data.fim] : [p.data.inicio])));
 ---
 
 <Pagina
   titulo="Projetos — Samuel Pires de Miranda"
-  descricao="Pipelines, APIs e análises de dados que Samuel Pires de Miranda construiu em 2026. Cada cartão abre o estudo de caso do projeto."
+  descricao={`Pipelines, APIs e análises de dados que Samuel Pires de Miranda construiu ${quando}. Cada cartão abre o estudo de caso do projeto.`}
 >
   <header class="cabeca-pagina cabeca-pagina--lista">
     {

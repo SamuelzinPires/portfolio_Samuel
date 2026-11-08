@@ -50,6 +50,7 @@ h1 {
   font-size: var(--texto-titulo-pagina);
   line-height: var(--entrelinha-titulo-pagina);
   letter-spacing: var(--tracking-titulo);
+  overflow-wrap: break-word; /* rede de segurança: uma palavra mais longa que a tela quebra em vez de vazar para o lado */
 }
 
 h2 {
