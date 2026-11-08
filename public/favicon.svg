@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Ícone do site: o prompt ">" (verde, como o "samuel@dados" da barra) e o cursor em bloco da home (azul, reto). -->
+  <rect width="32" height="32" rx="7" fill="#0D1117"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="6.5" fill="none" stroke="#30363D"/>
+  <path d="M7.5 9.5 14 16l-6.5 6.5" fill="none" stroke="#3FB950" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="17" y="9" width="7.5" height="14" fill="#1F6FEB"/>
+</svg>

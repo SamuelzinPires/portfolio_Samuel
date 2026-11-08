@@ -28,7 +28,9 @@ const { titulo, descricao, noindex = false, imagem = '/og/padrao.png', tipoOg = 
 
 // O Open Graph precisa de endereço completo (https://…): vem do `site` do astro.config.mjs
 const absoluta = (caminho: string) => (Astro.site ? new URL(caminho, Astro.site).href : undefined);
-const url = absoluta(Astro.url.pathname);
+// Sem a barra final, igual aos links do menu ("/projetos"): o canonical diz ao Google qual endereço é o oficial
+const caminho = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const url = absoluta(caminho);
 const imagemAbsoluta = absoluta(imagem);
 ---
 
@@ -41,9 +43,14 @@ const imagemAbsoluta = absoluta(imagem);
     <meta name="description" content={descricao} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#0D1117" />
+    <!-- Ícone: SVG nos navegadores atuais, .ico nos antigos, PNG de 180 px na tela de início do iPhone (public/) -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     {
       !noindex && (
         <>
+          {url && <link rel="canonical" href={url} />}
           <meta property="og:title" content={titulo} />
           <meta property="og:description" content={descricao} />
           <meta property="og:type" content={tipoOg} />
