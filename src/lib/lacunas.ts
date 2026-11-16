@@ -3,6 +3,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { montarCalendario } from './calendario';
+import { LIMITE_TITULO } from './curva';
 import type { Projeto } from './projetos';
 
 let jaAvisou = false;
@@ -12,6 +13,10 @@ function lacunasDe(p: Projeto): string[] {
   const d = p.data;
   const avisos: string[] = [];
 
+  // a tela de projetos mostra o título numa linha só (o limite foi medido nos 8 atuais, ver curva.ts)
+  if (d.titulo.length > LIMITE_TITULO) {
+    avisos.push(`o título tem ${d.titulo.length} caracteres e não cabe numa linha na tela de projetos (limite: ${LIMITE_TITULO}): encurte, ou o nome fica cortado no celular`);
+  }
   if (!p.body?.trim()) avisos.push('falta "por que existe" (corpo do .md vazio)');
   if (!d.comoFunciona) avisos.push('falta "como funciona" (comoFunciona)');
   if (!d.decisoes?.length) avisos.push('falta "decisões" (decisoes)');

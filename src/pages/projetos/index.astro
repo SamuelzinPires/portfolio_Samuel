@@ -1,14 +1,14 @@
 ---
-// Lista de projetos (modelo P4): por mês de início, do mais recente ao mais antigo, tudo lido da collection no build.
-// Sem o alternador "mapa | lista": o mapa só existe na V2 (Parte 4).
-import ListaProjetos from '../../components/projetos/ListaProjetos.astro';
+// Tela de projetos (modelo P5 · linha curva): cada projeto é um ponto numa curva, o mais antigo à esquerda (no celular, o mais
+// recente em cima), e o nome é o link. A geometria é calculada da collection no build (src/lib/curva.ts).
+// Sem o alternador "mapa | lista": o mapa com efeitos só existe na V2 (Parte 4), e é a própria curva que ganha os efeitos.
+import CurvaProjetos from '../../components/projetos/CurvaProjetos.astro';
 import TextoSeta from '../../components/TextoSeta.astro';
 import Pagina from '../../layouts/Pagina.astro';
 import { emAnos } from '../../lib/datas';
-import { carregarProjetos, contarProjetos, resumirProjetos } from '../../lib/projetos';
+import { carregarProjetos, resumirProjetos } from '../../lib/projetos';
 
 const projetos = (await carregarProjetos()).reverse();
-const total = projetos.length;
 const linha = resumirProjetos(projetos);
 // o ano da descrição vem das datas dos projetos (com um projeto de 2027, vira "entre 2026 e 2027")
 const quando = emAnos(projetos.flatMap((p) => (p.data.fim ? [p.data.inicio, p.data.fim] : [p.data.inicio])));
@@ -16,7 +16,7 @@ const quando = emAnos(projetos.flatMap((p) => (p.data.fim ? [p.data.inicio, p.da
 
 <Pagina
   titulo="Projetos — Samuel Pires de Miranda"
-  descricao={`Pipelines, APIs e análises de dados que Samuel Pires de Miranda construiu ${quando}. Cada cartão abre o estudo de caso do projeto.`}
+  descricao={`Pipelines, APIs e análises de dados que Samuel Pires de Miranda construiu ${quando}, numa linha do tempo. Cada nome abre o estudo de caso do projeto.`}
 >
   <header class="cabeca-pagina cabeca-pagina--lista">
     {
@@ -29,13 +29,14 @@ const quando = emAnos(projetos.flatMap((p) => (p.data.fim ? [p.data.inicio, p.da
     <div class="cabeca-pagina__linha">
       <h1 class="titulo-pagina">projetos</h1>
       <p class="lead cabeca-pagina__lead cabeca-pagina__lead--sempre cabeca-pagina__lead--lado">
-        Do mais recente (em azul) para o mais antigo. Os marcados com <span class="sr-only">estrela</span><span
-          aria-hidden="true">★</span
-        > são os destaques.
+        <span class="curva-frase--horizontal"
+          >Da esquerda (o mais antigo) para a direita (o mais recente). Clique num nome para abrir o projeto.</span
+        ><span class="curva-frase--vertical"
+          >Do mais recente, em cima, para o mais antigo. Toque num nome para abrir o projeto.</span
+        >
       </p>
     </div>
   </header>
 
-  <ListaProjetos projetos={projetos} />
-  {total > 0 && <p class="fim-lista">fim da lista · {total} de {contarProjetos(total)}</p>}
+  <CurvaProjetos projetos={projetos} />
 </Pagina>

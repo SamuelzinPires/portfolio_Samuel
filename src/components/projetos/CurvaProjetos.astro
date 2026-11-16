@@ -1,0 +1,198 @@
+---
+// Tela de projetos (P5 · linha curva). A geometria vem de src/lib/curva.ts, calculada da collection no build: um .md novo
+// vira um ponto novo, sem mexer aqui. Os dois layouts (horizontal e vertical) saem juntos no HTML e o CSS escolhe um.
+//
+// Como juntar a lista de links com o SVG sem style="" (a CSP da 7a não aceita):
+// · HORIZONTAL — um <ol> de verdade (o leitor de tela anuncia "lista, N itens"; o Tab segue o HTML). Cada <li> tem um SVG
+//   que cobre a área toda, e dentro dele um SVG aninhado em x="%" y="px" (a posição é atributo; em % porque a largura real só
+//   se conhece no navegador). Nele ficam o ponto, o fio e um <foreignObject> com o <a>: o link é HTML comum (foco, hover,
+//   ★ e → inline), coisa que um <text> não faz sem medir a fonte. Foi a alternativa que o texto do pedido sugeria; o <text>
+//   perdia a ★ e a seta em SVG (TextoSeta), e o role="list" em SVG é o que menos leitor de tela reconhece.
+// · VERTICAL — lista HTML em fluxo (o nome quebra linha sozinho em 320 px). Cada <li> leva uma faixa de 84 px com o ponto e a
+//   altura (atributo `height`) que dá o espaço até a linha seguinte; a curva é uma camada atrás.
+// Sem JavaScript tudo aparece e todos os links funcionam; o script (scripts/curva.ts) só cuida da rolagem lateral.
+import { calcularCurva } from '../../lib/curva';
+import { intervaloMeses, periodo } from '../../lib/datas';
+import type { Projeto } from '../../lib/projetos';
+import Icone from '../Icone.astro';
+import TextoSeta from '../TextoSeta.astro';
+
+interface Props {
+  /** Do mais recente ao mais antigo: é a ordem de leitura e do Tab nos dois layouts. */
+  projetos: Projeto[];
+  /** Só na /design: mostra um layout só, em qualquer largura. */
+  forcar?: 'horizontal' | 'vertical';
+  /** Só na /design: id do projeto mostrado como se o mouse estivesse em cima (nome azul, ponto cheio, chamada). */
+  ativo?: string;
+  /** Prefixo dos ids do SVG (o degradê): único por instância na página. */
+  idBase?: string;
+}
+
+const { projetos, forcar, ativo, idBase = 'curva' } = Astro.props;
+const { horizontal: h, vertical: v } = calcularCurva(projetos.map((p) => ({ id: p.id, inicio: p.data.inicio })));
+const porId = new Map(projetos.map((p) => [p.id, p]));
+
+// mesma ordem do Tab: do mais recente (direita) ao mais antigo (esquerda)
+const pontosH = [...h.pontos].reverse();
+
+// caixa do nome no horizontal: 280 px de largura (o maior título tem ~250) e altura para o nome + a chamada
+const CAIXA = { largura: 280, altura: 112, afastamento: 26 };
+const mostrarH = forcar !== 'vertical';
+const mostrarV = forcar !== 'horizontal';
+const idH = `${idBase}-grad-h`;
+const idV = `${idBase}-grad-v`;
+const rotuloLista = 'Projetos, do mais recente ao mais antigo';
+const arredondar = (n: number) => Math.round(n * 100) / 100;
+// "ago → out/2026", "fev/2026" (um mês só) ou, em andamento, "ago/2026 → hoje"
+const quando = (inicio: Date, fim?: Date) => (fim ? intervaloMeses(inicio, fim) : periodo(inicio));
+---
+
+{
+  projetos.length > 0 && (
+    <div class:list={['curva', forcar && `curva--${forcar}-fixa`]} data-curva>
+      {mostrarH && (
+        <div class="curva__horizontal">
+          <div class="curva__rolagem" data-curva-rolagem>
+            <div class="curva__quadro">
+              <svg
+                class="curva__linha"
+                aria-hidden="true"
+                viewBox={`0 0 ${h.largura} ${h.altura}`}
+                preserveAspectRatio="none"
+                width={h.larguraMinima}
+                height={h.altura}
+              >
+                <defs>
+                  <linearGradient id={idH} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={h.largura} y2="0">
+                    <stop offset="0" class="curva__parada--passado" />
+                    <stop offset="1" class="curva__parada--presente" />
+                  </linearGradient>
+                </defs>
+                <path class="curva__traco" d={h.caminho} stroke={`url(#${idH})`} vector-effect="non-scaling-stroke" />
+                <path class="curva__cauda" d={h.cauda} vector-effect="non-scaling-stroke" />
+              </svg>
+
+              <svg class="curva__marcas" aria-hidden="true" height={h.altura}>
+                {h.marcas.map((m) => (
+                  <svg x={`${m.xPct}%`} y={m.y} overflow="visible">
+                    {m.tipo === 'ano' && <line class="tique" x1="0" y1="-5" x2="0" y2="5" />}
+                    <text class="marca" x={m.dx} y={m.dy} text-anchor={m.ancora}>
+                      {m.texto}
+                    </text>
+                  </svg>
+                ))}
+              </svg>
+
+              <ol class="curva__lista" role="list" aria-label={rotuloLista}>
+                {pontosH.map((p) => {
+                  const projeto = porId.get(p.id)!;
+                  const { titulo, tipo, inicio, fim, chamada, destaque } = projeto.data;
+                  const acima = p.lado === 'acima';
+                  const sinal = acima ? -1 : 1;
+                  return (
+                    <li class:list={['curva__item', ativo === p.id && 'curva__item--ativo']}>
+                      <svg class="curva__no" height={h.altura}>
+                        <svg x={`${p.xPct}%`} y={p.y} overflow="visible">
+                          {p.recente && <circle class="halo" r="16" />}
+                          <line class="fio" x1="0" y1={sinal * 9} x2="0" y2={sinal * 22} />
+                          <circle
+                            class:list={['ponto', p.recente && 'ponto--recente']}
+                            r={p.recente ? 8 : 6}
+                            stroke-opacity={arredondar(0.55 + 0.45 * p.idade)}
+                          />
+                          <foreignObject
+                            x={-CAIXA.largura / 2}
+                            y={acima ? -(CAIXA.afastamento + CAIXA.altura) : CAIXA.afastamento}
+                            width={CAIXA.largura}
+                            height={CAIXA.altura}
+                            overflow="visible"
+                          >
+                            <div class:list={['no', `no--${p.lado}`]}>
+                              <a class="no__link" href={`/projetos/${projeto.id}`}>
+                                {chamada && (
+                                  <span class="no__chamada">
+                                    <TextoSeta texto={chamada} />
+                                  </span>
+                                )}
+                                <span class="no__titulo">{titulo}</span>
+                                <span class="no__meta">
+                                  {destaque && <Icone nome="estrela" />}
+                                  {destaque && <span class="sr-only">(em destaque)</span>}
+                                  <span>
+                                    <TextoSeta texto={quando(inicio, fim)} /> · {tipo}
+                                  </span>
+                                </span>
+                              </a>
+                            </div>
+                          </foreignObject>
+                        </svg>
+                      </svg>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mostrarV && (
+        <div class="curva__vertical">
+          <div class="curva__quadro-vertical">
+            <svg class="curva__linha-vertical" aria-hidden="true" height={v.altura}>
+              <defs>
+                <linearGradient id={idV} gradientUnits="userSpaceOnUse" x1="0" y1={v.altura} x2="0" y2="0">
+                  <stop offset="0" class="curva__parada--passado" />
+                  <stop offset="1" class="curva__parada--presente" />
+                </linearGradient>
+              </defs>
+              <path class="curva__traco" d={v.caminho} stroke={`url(#${idV})`} />
+              <path class="curva__cauda" d={v.cauda} />
+              <text class="marca" x={v.hoje.x} y={v.hoje.y}>
+                hoje
+              </text>
+            </svg>
+
+            <div class="curva__fluxo">
+              <svg class="curva__respiro" aria-hidden="true" width="1" height={v.respiro} />
+              <ol class="curva__lista-vertical" role="list" aria-label={rotuloLista}>
+                {v.pontos.map((p) => {
+                  const projeto = porId.get(p.id)!;
+                  const { titulo, tipo, inicio, fim, destaque } = projeto.data;
+                  return (
+                    <li class="no-v">
+                      <svg class="no-v__faixa" aria-hidden="true" width={v.largura} height={p.espaco}>
+                        {p.recente && <circle class="halo" cx={p.x} cy={18} r="16" />}
+                        <circle
+                          class:list={['ponto', p.recente && 'ponto--recente']}
+                          cx={p.x}
+                          cy={18}
+                          r={p.recente ? 8 : 6}
+                          stroke-opacity={arredondar(0.55 + 0.45 * p.idade)}
+                        />
+                      </svg>
+                      <a class="no__link no-v__link" href={`/projetos/${projeto.id}`}>
+                        <span class="no__titulo">{titulo}</span>
+                        <span class="no__meta">
+                          {destaque && <Icone nome="estrela" />}
+                          {destaque && <span class="sr-only">(em destaque)</span>}
+                          <span>
+                            <TextoSeta texto={quando(inicio, fim)} /> · {tipo}
+                          </span>
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+<script>
+  import '../../scripts/curva';
+</script>

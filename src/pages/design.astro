@@ -8,9 +8,10 @@ import Certificados from '../components/certificados/Certificados.astro';
 import ContatoDag from '../components/contato/ContatoDag.astro';
 import EmailTexto from '../components/EmailTexto.astro';
 import PecaAssinatura from '../components/pecas/PecaAssinatura.astro';
-import ListaProjetos from '../components/projetos/ListaProjetos.astro';
+import CurvaProjetos from '../components/projetos/CurvaProjetos.astro';
 import { carregarCertificados, resumir } from '../lib/certificados';
-import { carregarProjetos, contarProjetos, resumirProjetos } from '../lib/projetos';
+import { HORIZONTAL, LIMITE_TITULO, VERTICAL } from '../lib/curva';
+import { carregarProjetos, resumirProjetos } from '../lib/projetos';
 import Icone from '../components/Icone.astro';
 import TextoSeta from '../components/TextoSeta.astro';
 import Base from '../layouts/Base.astro';
@@ -36,7 +37,6 @@ const cores = [...tokensCss.matchAll(/--cor-([\w-]+):\s*(#[0-9A-Fa-f]{6});/g)].m
 const hexDe = (nome: string) => cores.find((c) => c.nome === nome)?.hex ?? '#000000';
 const fundo = hexDe('fundo');
 const painel = hexDe('painel');
-const azul = hexDe('azul');
 
 const usos: Record<string, string> = {
   fundo: 'fundo da página',
@@ -48,7 +48,6 @@ const usos: Record<string, string> = {
   'azul-claro': 'links, texto azul, foco, botão',
   verde: 'OK, sucesso, em andamento',
   ambar: 'WARN, falha, destaque ★',
-  branco: 'só texto sobre o azul (cartão azul do destaque); única cor fora da paleta fechada',
 };
 
 // Razões de contraste citadas nos textos das seções (calculadas aqui, nunca digitadas)
@@ -72,8 +71,6 @@ const pares = [
   { texto: 'ambar', fundo: 'painel', onde: '★ destaque no painel do celular' },
   { texto: 'verde', fundo: 'fundo', onde: 'ok, em andamento, POST' },
   { texto: 'fundo', fundo: 'azul-claro', onde: 'botão primário, alternador ativo' },
-  { texto: 'branco', fundo: 'azul', onde: 'cartão azul do destaque (papel --cor-texto-sobre-azul)' },
-  { texto: 'texto', fundo: 'azul', onde: 'reprovado: por isso o cartão azul usa o branco e não o texto da página' },
 ].map((p) => ({ ...p, razao: contraste(hexDe(p.texto), hexDe(p.fundo)) }));
 
 const escala = [
@@ -130,6 +127,19 @@ const pecasDosProjetos = todosProjetos.filter((p) => p.data.peca);
 // Lista de projetos: o mesmo componente da página, com os projetos reais
 const projetosRecentes = [...todosProjetos].reverse();
 const linhaProjetos = resumirProjetos(projetosRecentes);
+const projetoAtivo = projetosRecentes.find((p) => p.id === 'data-quality-engineering');
+const anoInicial = projetosRecentes.length ? projetosRecentes[projetosRecentes.length - 1].data.inicio.getUTCFullYear() : '';
+const maiorTitulo = Math.max(...projetosRecentes.map((p) => p.data.titulo.length));
+// Medido no Chrome em 13/11/2026 com os 8 projetos de hoje, forçando o horizontal em cada largura (sem o mínimo e sem o corte).
+// "folga" = menor distância entre as caixas de dois nomes. Refazer se um título mudar.
+const larguras = [
+  { largura: 1024, area: 934, escala: '0,71', resultado: 'nomes se tocam (6 pares)', horizontal: false },
+  { largura: 1152, area: 1050, escala: '0,80', resultado: 'nomes se tocam (5 pares)', horizontal: false },
+  { largura: 1280, area: 1167, escala: '0,89', resultado: 'folga de 2,5 px: 2 pares se tocam', horizontal: false },
+  { largura: '1312 (corte)', area: 1196, escala: '0,91', resultado: 'folga de 8,9 px: passa', horizontal: true },
+  { largura: 1366, area: 1245, escala: '0,95', resultado: 'folga de 19,6 px: passa', horizontal: true },
+  { largura: '1440+', area: 1312, escala: '1,00', resultado: 'folga de 33,7 px: passa', horizontal: true },
+];
 
 // Certificações: a galeria usa os certificados reais. A escala (30 certificados em 2 anos, com um mês acima do
 // limite) é conferida numa página temporária do `npm run dev`, apagada antes do commit: dado de teste não fica no repo.
@@ -173,15 +183,7 @@ const resumoCertificados = resumir(certificadosReais);
                 <div>
                   <p class="ds-cor-nome">--cor-{c.nome}</p>
                   <p class="ds-apagado">{c.hex} · {usos[c.nome]}</p>
-                  {c.nome === 'branco' && (
-                    <p class="ds-contraste">
-                      <span>sobre o azul {contraste(c.hex, azul).toFixed(2)}:1</span>
-                      <span class:list={['ds-selo', contraste(c.hex, azul) >= 4.5 ? 'ds-selo--ok' : 'ds-selo--aviso']}>
-                        {nota(contraste(c.hex, azul))}
-                      </span>
-                    </p>
-                  )}
-                  {c.nome !== 'fundo' && c.nome !== 'painel' && c.nome !== 'branco' && (
+                  {c.nome !== 'fundo' && c.nome !== 'painel' && (
                     <p class="ds-contraste">
                       <span>fundo {rf.toFixed(2)}:1</span>
                       <span>painel {rp.toFixed(2)}:1</span>
@@ -580,27 +582,116 @@ const resumoCertificados = resumir(certificadosReais);
     </section>
 
     <section class="ds-secao" aria-labelledby="t-lista">
-      <h2 id="t-lista"><span class="ds-num">12</span> lista de projetos</h2>
+      <h2 id="t-lista"><span class="ds-num">12</span> tela de projetos (linha curva)</h2>
       <p class="ds-apagado">
-        Modelo P4: um grupo por mês de <code class="ds-codigo-inline">inicio</code>, o mais recente primeiro, sem linha ligando os cartões
-        (<code class="ds-codigo-inline">ListaProjetos.astro</code>, <code class="ds-codigo-inline">.grupo-mes--projetos</code>). O cartão inteiro é o
-        link (<code class="ds-codigo-inline">.cartao-projeto</code>, <code class="ds-codigo-inline">--raio-cartao</code>); chamada opcional some sem
-        dado. Todos os cartões têm o mesmo tamanho: o destaque é só a ★, e <code class="ds-codigo-inline">--azul</code> = o mais recente, com
-        texto branco ({razao('branco', 'azul')}:1).
+        Modelo P5: cada projeto é um ponto numa curva, o mais antigo à esquerda; no celular, o mais recente em cima. O nome é o link
+        (<code class="ds-codigo-inline">/projetos/&lt;slug&gt;</code>) e a chamada (campo <code class="ds-codigo-inline">chamada</code>, opcional)
+        só aparece com o mouse em cima ou com o foco, em CSS (<code class="ds-codigo-inline">:hover</code> e
+        <code class="ds-codigo-inline">:focus-visible</code>); no toque, tocar no nome abre o projeto. A geometria é calculada da collection no build
+        (<code class="ds-codigo-inline">src/lib/curva.ts</code> e <code class="ds-codigo-inline">CurvaProjetos.astro</code>): projeto novo = um
+        <code class="ds-codigo-inline">.md</code>, que entra à direita (no celular, em cima) sem mexer nos outros. Posição de ponto, nome e curva fica só em
+        atributos de SVG, porque a CSP não aceita <code class="ds-codigo-inline">style=""</code>. Os nomes formam um
+        <code class="ds-codigo-inline">&lt;ol&gt;</code>: o leitor de tela anuncia “lista, {projetosRecentes.length} itens” e o Tab vai do mais recente ao mais antigo,
+        nos dois layouts. Sem JavaScript a tela aparece inteira e todos os links funcionam.
       </p>
+
+      <h3 class="ds-sub">horizontal · a partir de 1312 px</h3>
+      <p class="ds-apagado">
+        Três estados na mesma curva: <strong>normal</strong> (todos os nomes, em branco); <strong>mouse ou foco</strong> (aqui o {projetoAtivo?.data.titulo}: nome azul sublinhado, ponto cheio e a chamada acima ou abaixo do nome); <strong>mais recente</strong> (ponto cheio com halo, e a linha
+        tracejada sobe até “hoje”). Do passado ao presente a linha vai do cinza ao azul.
+      </p>
+      <CurvaProjetos projetos={projetosRecentes} forcar="horizontal" ativo={projetoAtivo?.id} idBase="curva-h" />
+
+      <h3 class="ds-sub">vertical · até 1311 px</h3>
+      <p class="ds-apagado">
+        Celular e tablet. Cada ponto a uma distância diferente da margem, e a curva nunca passa de x = {VERTICAL.xMaximo} px. O nome começa em {VERTICAL.largura + 4} px, numa linha só: o título encolhe com a tela (cerca de 16 px em 320 px).
+      </p>
+      <div class="ds-celular">
+        <CurvaProjetos projetos={projetosRecentes} forcar="vertical" idBase="curva-v" />
+      </div>
+
+      <h3 class="ds-sub">corte entre vertical e horizontal</h3>
+      <p class="ds-apagado">
+        O corte é a <strong>menor largura em que a conferência passa</strong>: título numa linha só, nenhum nome a menos de 8 px de outro e a curva fora da
+        caixa de todos os nomes. Medido no Chrome com os {projetosRecentes.length} projetos de hoje, forçando o horizontal em cada largura (sem o mínimo e sem o
+        corte). Abaixo de 1312 px é vertical. Se um dia os projetos não couberem com a escala mínima ({String(HORIZONTAL.escalaMinima).replace('.', ',')}), a área da curva
+        rola para o lado (região focável, que roda pelo teclado; com JavaScript ela abre no fim, sem JavaScript no começo) em vez de apertar os nomes.
+        Refazer a medição se um título mudar.
+      </p>
+      <div class="ds-rolagem" role="region" tabindex="0" aria-label="Tabela de larguras da tela de projetos (role para o lado)">
       <table class="ds-tabela">
-        <caption class="sr-only">Lista de projetos: posição do mês e colunas de cartões em cada largura</caption>
+        <caption class="sr-only">Tela de projetos: o que o horizontal faria em cada largura e qual layout o site usa</caption>
         <thead>
-          <tr><th scope="col">largura</th><th scope="col">mês</th><th scope="col">colunas de cartões</th></tr>
+          <tr>
+            <th scope="col">largura</th>
+            <th scope="col">área da curva</th>
+            <th scope="col">escala</th>
+            <th scope="col">horizontal espremido</th>
+            <th scope="col">o site usa</th>
+          </tr>
         </thead>
         <tbody>
-          <tr><th scope="row">até 1023 px</th><td>em cima</td><td>1</td></tr>
-          <tr><th scope="row">1024–1439 px</th><td>à esquerda</td><td>2</td></tr>
-          <tr><th scope="row">a partir de 1440 px</th><td>à esquerda</td><td>3</td></tr>
+          {
+            larguras.map((l) => (
+              <tr>
+                <th scope="row">{l.largura} px</th>
+                <td>{l.area} px</td>
+                <td>{l.escala}</td>
+                <td>{l.resultado}</td>
+                <td>
+                  <span class:list={['ds-selo', l.horizontal ? 'ds-selo--ok' : 'ds-selo--aviso']}>{l.horizontal ? 'horizontal' : 'vertical'}</span>
+                </td>
+              </tr>
+            ))
+          }
         </tbody>
       </table>
-      <ListaProjetos projetos={projetosRecentes} />
-      <p class="fim-lista">fim da lista · {projetosRecentes.length} de {contarProjetos(projetosRecentes.length)}</p>
+      </div>
+
+      <h3 class="ds-sub">regra de cálculo</h3>
+      <ol class="ds-regras" role="list">
+        <li>
+          <span class="ds-num">01</span>
+          <span>
+            Distância entre vizinhos = {HORIZONTAL.base} + {HORIZONTAL.coeficiente} × √dias entre os <code class="ds-codigo-inline">inicio</code>, escalada
+            para preencher a área (4 dias → 133 px; 55 dias → 155 px: a raiz amortece). Abaixo da escala {String(HORIZONTAL.escalaMinima).replace('.', ',')} a área rola.
+          </span>
+        </li>
+        <li>
+          <span class="ds-num">02</span>
+          <span>
+            Alturas por posição, do mais antigo: cristas {HORIZONTAL.cristas.join(' · ')} (nome em cima) e vales {HORIZONTAL.vales.join(' · ')} (nome embaixo),
+            numa área de {HORIZONTAL.altura} px. Do 9º projeto em diante o padrão se repete, então um projeto novo entra à direita sem mexer nos anteriores.
+          </span>
+        </li>
+        <li>
+          <span class="ds-num">03</span>
+          <span>
+            Intervalo de mais de {HORIZONTAL.intervaloLongoDias} dias sem projeto ganha um ponto no meio, à meia altura, para a dobra ficar mais lenta
+            (hoje: abr → jun, 55 dias; o segundo maior intervalo tem 36).
+          </span>
+        </li>
+        <li>
+          <span class="ds-num">04</span>
+          <span>
+            A linha entra com um vale pequeno e a marca do ano (“{anoInicial}”) no começo; cada virada de ano que a linha cruza ganha a marca do ano novo. A cauda
+            tracejada sobe até “hoje” e sai de um ponto fantasma (o próximo do padrão), para não passar em cima do nome do último.
+          </span>
+        </li>
+        <li>
+          <span class="ds-num">05</span>
+          <span>
+            Vertical: o mais recente em cima; distância da margem, do mais antigo: {VERTICAL.padraoX.join(', ')} (de cima para baixo, com 8 projetos: 22, 58, 30, 64, 18, 50, 26, 56),
+            repetindo; espaço entre linhas = {VERTICAL.espacoBase} + {VERTICAL.espacoCoeficiente} × √dias, entre {VERTICAL.espacoMinimo} e {VERTICAL.espacoMaximo} px.
+          </span>
+        </li>
+        <li>
+          <span class="ds-num">06</span>
+          <span>
+            Título longo demais não cabe numa linha: o build avisa a partir de {LIMITE_TITULO} caracteres (o maior dos {projetosRecentes.length} atuais tem {maiorTitulo}).
+          </span>
+        </li>
+      </ol>
     </section>
 
     <section class="ds-secao" aria-labelledby="t-celular">
@@ -872,6 +963,7 @@ const resumoCertificados = resumir(certificadosReais);
   }
 
   .ds-secao:last-of-type {
+    grid-template-columns: minmax(0, 1fr); /* sem isto o bloco mais largo (a curva horizontal, uma tabela) estica a coluna e a página rola para o lado */
     padding-bottom: var(--esp-secao);
   }
 
@@ -1114,6 +1206,17 @@ const resumoCertificados = resumir(certificadosReais);
     width: 100%;
     border-collapse: collapse;
     font-size: var(--texto-rotulo);
+  /* tabela mais larga que a tela: rola dentro do próprio quadro, sem rolar a página */
+  .ds-rolagem {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cor-linha) transparent;
+  }
+
+  .ds-rolagem .ds-tabela {
+    min-width: 44rem;
+  }
+
   }
 
   .ds-tabela th,

@@ -1408,205 +1408,341 @@ a.canal:hover,
   background: var(--cor-ok);
 }
 
-/* ── Lista de projetos (P4): meses e cartões ────────────────────────── */
-/* Reaproveita o .grupo-mes das certificações. Todos os cartões têm o mesmo tamanho: o destaque é marcado só pela ★.
-   Até 1023 px: cabeçalho do mês em cima e 1 coluna. De 1024 a 1439: rótulo à esquerda e 2 colunas.
-   A partir de 1440: 3 colunas de 352 px. */
+/* ── Tela de projetos (P5): linha curva ─────────────────────────────── */
+/* Dois layouts gerados no build e trocados só por CSS, no corte de largura (--bp-curva, ver tokens.css): vertical (celular e
+   tablet) e horizontal. Posição de ponto, nome e curva fica em ATRIBUTO de SVG (x, y, cx, d…): a CSP não aceita style="".
+   Sem JavaScript a tela aparece inteira e todos os links funcionam. */
 
-.lista-meses {
+/* a frase de apoio do topo troca no mesmo corte que o layout */
+.curva-frase--horizontal {
+  display: none;
+}
+
+.curva__horizontal {
+  display: none;
+}
+
+@media (min-width: 1312px) {
+  .curva-frase--horizontal {
+    display: inline;
+  }
+
+  .curva-frase--vertical {
+    display: none;
+  }
+
+  .curva__horizontal {
+    display: block;
+  }
+
+  .curva__vertical {
+    display: none;
+  }
+}
+
+/* quem pede um layout fixo (a /design mostra os dois, em qualquer largura) ignora o corte */
+.curva--horizontal-fixa .curva__horizontal,
+.curva--vertical-fixa .curva__vertical {
+  display: block;
+}
+
+/* nome, data e chamada: os mesmos nos dois layouts */
+.no__link {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--esp-mes);
-}
-
-.lista-meses + .fim-lista {
-  margin-top: var(--esp-mes);
-}
-
-/* "2026 · ago": o h2 aqui é rótulo de log, não título, então volta para a mono */
-.grupo-mes--projetos .grupo-mes__nome {
-  font-family: var(--fonte-mono);
-  font-weight: var(--peso-normal);
-  letter-spacing: 0;
-  color: var(--cor-apagado);
-}
-
-.grupo-mes__mes {
-  font-weight: var(--peso-forte);
-  color: var(--cor-texto);
-}
-
-.grupo-mes--projetos .grupo-mes__lista {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 1024px) {
-  .grupo-mes--projetos {
-    grid-template-areas: 'rotulo lista'; /* sem a linha do "ver os outros N": nenhum mês de projetos é recolhido */
-    row-gap: 0;
-    padding-top: calc(var(--esp-5) + var(--esp-1));
-  }
-
-  .grupo-mes--projetos .grupo-mes__lista {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* notebook: o rótulo "2026 · ago" cabe em 140 px, e os 78 px que sobram evitam a stack em 2 linhas */
-@media (min-width: 1024px) and (max-width: 1279px) {
-  .grupo-mes--projetos {
-    --largura-rotulo-mes: 8.75rem;
-  }
-}
-
-/* desktop: com o rótulo em 176 px, cada cartão ganha 14 px e título e stack cabem em 1 linha, com a mesma altura em todos */
-@media (min-width: 1440px) {
-  .grupo-mes--projetos {
-    --largura-rotulo-mes: 11rem;
-  }
-
-  .grupo-mes--projetos .grupo-mes__lista {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* Cartão de projeto: o cartão inteiro é o link */
-.cartao-projeto {
-  display: flex;
-  align-items: center;
-  gap: var(--esp-3);
-  padding: var(--esp-4);
-  background: var(--cor-painel);
-  border: var(--borda);
-  border-radius: var(--raio-cartao);
+  gap: var(--esp-1);
+  padding: 6px var(--esp-1);
+  border-radius: var(--raio-botao);
   color: var(--cor-texto);
   text-decoration: none;
-  transition: border-color var(--dur-rapida) var(--ease-padrao);
 }
 
-.cartao-projeto:hover {
-  border-color: var(--cor-azul-claro);
-  color: var(--cor-texto);
+.no__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-nome-curva);
+  font-weight: var(--peso-forte);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-cartao);
+  white-space: nowrap;
+  transition: color var(--dur-rapida) var(--ease-padrao);
 }
 
-/* o anel de foco acompanha o raio do cartão */
-.cartao-projeto:focus-visible {
-  border-radius: var(--raio-cartao);
-}
-
-/* texto branco: o #E6EDF3 da página reprova sobre o azul (3,92:1). A borda azul mantém o tamanho do cartão vizinho */
-.cartao-projeto--azul {
-  --cor-estrela: var(--cor-texto-sobre-azul);
-  background: var(--cor-azul);
-  border-color: var(--cor-azul);
-  color: var(--cor-texto-sobre-azul);
-}
-
-.cartao-projeto--azul:hover {
-  border-color: var(--cor-texto-sobre-azul);
-  color: var(--cor-texto-sobre-azul);
-}
-
-.cartao-projeto__corpo {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--esp-2);
-  min-width: 0;
-}
-
-.cartao-projeto__meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0 var(--esp-3);
-  font-size: var(--texto-rotulo);
-  line-height: var(--entrelinha-media);
-}
-
-.cartao-projeto__tipo {
+.no__meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--cor-apagado);
-}
-
-.cartao-projeto__periodo {
-  font-weight: var(--peso-forte);
-}
-
-.cartao-projeto__periodo--andamento {
-  color: var(--cor-ok);
-}
-
-.cartao-projeto__titulo {
-  font-family: var(--fonte-titulo);
-  font-size: var(--texto-cartao);
-  font-weight: var(--peso-forte);
-  line-height: 1.15;
-  letter-spacing: var(--tracking-cartao);
-  overflow-wrap: break-word;
-}
-
-.cartao-projeto__chamada {
-  font-size: var(--texto-nav);
-  font-weight: var(--peso-forte);
-  line-height: var(--entrelinha-media);
-}
-
-.cartao-projeto__stack {
   font-size: var(--texto-rotulo);
   line-height: var(--entrelinha-media);
   color: var(--cor-apagado);
 }
 
-/* faixa de largura fixa: a seta fica no mesmo prumo em todos os cartões */
-.cartao-projeto__seta {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 1.75rem;
-  height: 1.75rem;
-  color: var(--cor-azul-claro);
+.no__chamada {
+  font-size: var(--texto-rotulo);
+  line-height: var(--entrelinha-media);
+  color: var(--cor-texto);
+}
+
+/* linhas do SVG */
+.curva__traco,
+.curva__cauda {
+  fill: none;
   stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: transform var(--dur-rapida) var(--ease-padrao);
 }
 
-.cartao-projeto__seta .icone {
-  width: 1.25rem;
-  height: 1.25rem;
+.curva__traco {
+  stroke-width: 2.5;
 }
 
-.cartao-projeto:hover .cartao-projeto__seta {
-  transform: translateX(3px);
+.curva__cauda {
+  stroke: var(--cor-azul-claro);
+  stroke-width: 2;
+  stroke-dasharray: 3 7;
+  opacity: 0.7;
 }
 
-.cartao-projeto--azul .cartao-projeto__seta {
-  width: 2rem;
-  height: 2rem;
-  background: var(--cor-texto-sobre-azul);
-  border-radius: var(--raio-ponto);
-  color: var(--cor-azul);
+.curva__parada--passado {
+  stop-color: var(--cor-linha);
 }
 
-/* no azul, tudo é branco: o apagado reprova sobre esse fundo */
-.cartao-projeto--azul .cartao-projeto__tipo,
-.cartao-projeto--azul .cartao-projeto__periodo,
-.cartao-projeto--azul .cartao-projeto__stack {
-  color: var(--cor-texto-sobre-azul);
+.curva__parada--presente {
+  stop-color: var(--cor-azul-claro);
 }
 
-/* a linha de cima do azul é a mais longa do site (★ + tipo + período): em 12 px ela cabe no cartão de 338 px */
-.cartao-projeto--azul .cartao-projeto__meta {
+.ponto {
+  fill: var(--cor-fundo);
+  stroke: var(--cor-azul-claro);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    fill var(--dur-rapida) var(--ease-padrao),
+    transform var(--dur-rapida) var(--ease-padrao);
+}
+
+.ponto--recente {
+  fill: var(--cor-azul-claro);
+}
+
+.halo {
+  fill: none;
+  stroke: var(--cor-azul);
+  stroke-width: 1.5;
+  opacity: 0.5;
+}
+
+.fio,
+.tique {
+  stroke: var(--cor-linha);
+  stroke-width: 1;
+}
+
+.marca {
+  font-family: var(--fonte-mono);
   font-size: var(--texto-micro);
+  fill: var(--cor-apagado);
 }
 
-@media (min-width: 1024px) {
-  .cartao-projeto {
-    padding: calc(var(--esp-4) + var(--esp-1));
+/* estado "mouse em cima" e "foco": nome azul sublinhado, ponto cheio e a chamada aparece. Só onde há mouse (hover: hover);
+   no toque, tocar no nome abre o projeto. `.curva__item--ativo` mostra o mesmo estado parado, para a /design. */
+@media (hover: hover) {
+  .curva__item:hover .ponto,
+  .no-v:hover .ponto {
+    fill: var(--cor-azul-claro);
+    transform: scale(1.5);
   }
+
+  .no__link:hover .no__titulo {
+    color: var(--cor-azul-claro);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .no__link:hover .no__chamada {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.curva__item:focus-within .ponto,
+.no-v:focus-within .ponto,
+.curva__item--ativo .ponto {
+  fill: var(--cor-azul-claro);
+  transform: scale(1.5);
+}
+
+.no__link:focus-visible .no__titulo,
+.curva__item--ativo .no__titulo {
+  color: var(--cor-azul-claro);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.no__link:focus-visible .no__chamada,
+.curva__item--ativo .no__link .no__chamada {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ── horizontal ── */
+/* Três camadas empilhadas na mesma célula da grade: a curva (esticada em x), as marcas (ano e "hoje") e a lista, com um SVG
+   por projeto (a posição é x em %, para a área poder esticar). O <ol> é uma lista de verdade: o leitor de tela anuncia
+   "lista, N itens" e o Tab segue a ordem do HTML, do mais recente ao mais antigo. Só os links recebem o mouse. */
+.curva__rolagem {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cor-linha) transparent;
+}
+
+.curva__rolagem:focus-visible {
+  outline-offset: -2px;
+  border-radius: var(--raio-botao);
+}
+
+/* A largura mínima vem do atributo `width` do SVG da curva (a conta está em curva.ts): a célula nunca fica mais estreita que
+   ele, então com muitos projetos a área rola em vez de apertar os nomes, e com poucos ela estica até preencher. */
+.curva__quadro {
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr);
+}
+
+.curva__quadro > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.curva__linha,
+.curva__marcas,
+.curva__no {
+  display: block;
+  width: 100%;
+  pointer-events: none;
+}
+
+.curva__lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.curva__lista > li {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.no {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.no--acima {
+  justify-content: flex-end;
+}
+
+.no--abaixo {
+  justify-content: flex-start;
+}
+
+.curva__horizontal .no__link {
+  align-items: center;
+  width: fit-content;
+  pointer-events: auto;
+}
+
+.curva__horizontal .no__meta {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* a chamada fica fora do fluxo (acima do nome de cima, abaixo do nome de baixo): o link não muda de tamanho ao mostrá-la */
+.curva__horizontal .no__chamada {
+  position: absolute;
+  left: 50%;
+  white-space: nowrap;
+  opacity: 0;
+  transition:
+    opacity var(--dur-rapida) var(--ease-padrao),
+    transform var(--dur-rapida) var(--ease-padrao);
+}
+
+.no--acima .no__chamada {
+  bottom: 100%;
+  transform: translate(-50%, 4px);
+}
+
+.no--abaixo .no__chamada {
+  top: 100%;
+  transform: translate(-50%, -4px);
+}
+
+/* ── vertical ── */
+/* A curva fica atrás, numa camada só, com x em px; a lista é HTML comum, com uma faixa de 84 px à esquerda onde cada linha desenha o
+   próprio ponto. A altura da faixa (atributo `height` do SVG) é o espaço até a linha seguinte: assim a lista e a curva andam juntas. */
+.curva__quadro-vertical {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.curva__quadro-vertical > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.curva__linha-vertical {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.curva__fluxo {
+  display: flex;
+  flex-direction: column;
+}
+
+.curva__respiro {
+  display: block;
+  flex: none;
+}
+
+.curva__lista-vertical {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.no-v {
+  display: flex;
+  align-items: flex-start;
+}
+
+.no-v__faixa {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.no-v__link {
+  flex: 1;
+  min-width: 0;
+}
+
+/* o título encolhe com a tela (320 px: ~16 px), senão passaria da margem: continua numa linha só */
+.no-v__link .no__titulo {
+  font-size: min(var(--texto-nome-curva), calc((100vw - 7.75rem) * 0.08));
+  overflow: hidden; /* rede de segurança: um título longo demais é cortado com reticências em vez de empurrar a página (o build avisa) */
+  text-overflow: ellipsis;
+}
+
+/* o celular não tem mouse: a chamada só existe no computador */
+.no-v__link .no__chamada {
+  display: none;
 }
 
 /* ── Contato em DAG (K3): você → canal → Samuel ────────────────────── */
