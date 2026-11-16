@@ -3079,8 +3079,8 @@ button.endpoint:hover {
 }
 
 /* ── Cursor personalizado ──────────────────────────────────────────── */
-/* Os dois elementos ficam no layout (Base.astro); src/scripts/cursor.ts os move e só liga
-   com mouse (pointer: fine) e sem "reduzir movimento". Sem JavaScript, ficam invisíveis. */
+/* Os dois elementos ficam no layout (Base.astro); src/scripts/cursor.ts os move e só liga com mouse (pointer: fine).
+   Com "reduzir movimento" o cursor continua, mas o anel cola no ponto e nada anima. Sem JavaScript, ficam invisíveis. */
 
 .cursor,
 .cursor__ponto {
@@ -3138,10 +3138,20 @@ button.endpoint:hover {
   transform: scale(0);
 }
 
-/* o cursor do sistema só some depois que o script liga o cursor próprio */
+/* o cursor do sistema só some quando o cursor próprio está na tela (o script põe e tira a classe junto) */
 html.cursor-ativo,
 html.cursor-ativo * {
   cursor: none;
+}
+
+/* movimento reduzido: o anel e o ponto não animam na troca de estado nem no aparecer (as durações já são 0; aqui fica explícito) */
+@media (prefers-reduced-motion: reduce) {
+  .cursor,
+  .cursor__ponto,
+  .cursor__anel,
+  .cursor__ponto::before {
+    transition: none;
+  }
 }
 
 /* ── Transição entre páginas (View Transitions) ────────────────────── */

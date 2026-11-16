@@ -790,7 +790,11 @@ const resumoCertificados = resumir(certificadosReais);
       <ol class="log" role="list">
         <li><span class="log__hora">00:00:01</span><span class="log__nivel log__nivel--erro">ERRO</span><span>router</span><span class="log__msg">rota não encontrada</span></li>
       </ol>
-      <p class="ds-apagado">Cursor (só com mouse, sem “reduzir movimento”): anel que segue com atraso e ponto exato; sobre link o anel cresce e fica azul. Na galeria, só a imagem parada.</p>
+      <p class="ds-apagado">
+        Cursor (só com mouse, em qualquer configuração de movimento): anel que segue com atraso e ponto exato; sobre link o anel cresce e fica azul. Com “reduzir
+        movimento” ligado o cursor continua, mas o anel cola no ponto (sem o atraso) e a troca de estado não anima. O cursor do sistema só some quando o próprio
+        está na tela, então nunca fica sem nenhum dos dois. No toque não existe; sem JavaScript fica o do sistema. Na galeria, só a imagem parada.
+      </p>
       <ul class="ds-cursores" role="list">
         <li><span class="ds-cursor-demo"><span class="cursor__anel"></span></span>padrão</li>
         <li class="cursor--link"><span class="ds-cursor-demo"><span class="cursor__anel"></span></span>sobre link</li>
@@ -959,11 +963,11 @@ const resumoCertificados = resumir(certificadosReais);
     padding-block: var(--esp-7);
     border-top: var(--borda);
     display: grid;
+    grid-template-columns: minmax(0, 1fr); /* sem isto o bloco mais largo (a curva horizontal, uma tabela) estica a coluna e a página rola para o lado */
     gap: var(--esp-5);
   }
 
   .ds-secao:last-of-type {
-    grid-template-columns: minmax(0, 1fr); /* sem isto o bloco mais largo (a curva horizontal, uma tabela) estica a coluna e a página rola para o lado */
     padding-bottom: var(--esp-secao);
   }
 
@@ -1202,10 +1206,6 @@ const resumoCertificados = resumir(certificadosReais);
   }
 
   /* raios: tabela token → valor → onde usa */
-  .ds-tabela {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--texto-rotulo);
   /* tabela mais larga que a tela: rola dentro do próprio quadro, sem rolar a página */
   .ds-rolagem {
     overflow-x: auto;
@@ -1217,6 +1217,10 @@ const resumoCertificados = resumir(certificadosReais);
     min-width: 44rem;
   }
 
+  .ds-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--texto-rotulo);
   }
 
   .ds-tabela th,
